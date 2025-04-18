@@ -21,21 +21,60 @@ class Layer {
         
 
     public:
-        Layer(int n, int f) : neurons_(n), features_(f), weights_(Matrix<T>(n,f,1)), biases_(Matrix<T>(1,f,1)) {} /* Biases might be wrong, check later. */
+        Layer(int n, int f) : neurons_(n), features_(f), weights_(Matrix<T>(n,f,1)), biases_(Matrix<T>(1,n,1)) {} /* Biases might be wrong, check later. */
     
         // # Perform full pass.
         Matrix<T> pass(Matrix<T> x) {
-            return calculate_activation(x);
+            return calculate_activation(calculate_z(x));
         }   
         
         // # Calculate activation of layer. 
         Matrix<T> calculate_activation(Matrix<T> x) {
-            return calculate_z(x); // # Currently linear.
+            return x; // # Currently linear.
         }
 
         // # Calculate z of layer.
         Matrix<T> calculate_z(Matrix<T> x) {
-            return x * this->weights_ + this->biases_;
+            return x * this->weights_.transpose() + this->biases_;
+        }
+
+        // # One iteration of backprop.
+        void backprop(Matrix<float> x, Matrix<float> y, float learning_rate) {
+            // # Update weights.
+            Matrix<float> a = pass(x);
+
+            Matrix<float> dz_dw = x;
+
+            Matrix<float> da_dz = this->weights_;
+            Matrix<float> dE_da = (a - y) * 2;
+            Matrix<float> delta = da_dz * dE_da;
+
+            Matrix<float> dE_dw2 = dz_dw * delta;
+
+            this->weights_ = this->weights_ - dE_dw2 * learning_rate;
+
+            // # Update biases.
+
+            Matrix<float> dz_db (1,1,1.0f);
+            Matrix<float> dE_db = dz_db * delta;
+
+            this->biases_ = this->biases_ - dE_db * learning_rate;
+
+        }
+
+        // # Update all weights.
+        void updateAllWeights(Matrix<T> weights) {
+            // Guarantee new weights matrix has the same shape as current one.
+            assert(this->weights_.rows() == weights.rows());
+            assert(this->weights_.cols() == weights.cols());
+
+            // Replace.
+            this->weights_ = weights;
+        }
+
+        // # Update specific weight.
+        void updateWeight(int r, int c, T val) {
+            this->weights_(r, c) = val;
         }
 
         // # Access weights.

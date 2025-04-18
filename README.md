@@ -12,3 +12,6 @@ From ./:
 
 * All at the same time:
 `clear && cmake -S . -B build && cmake --build build && ctest --test-dir build -V`
+
+# Layer vs Model
+* Layers process one input at a time, models handle multiple, and they facilitate passing data from one layer to another.

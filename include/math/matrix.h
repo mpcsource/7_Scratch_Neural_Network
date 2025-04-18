@@ -26,6 +26,9 @@ class Matrix {
         // # Constructor.
         Matrix(int r, int c, T fill = 0) : rows_(r), cols_(c), data_(r*c, fill) {}
 
+        // # Constructor receiving data.
+        Matrix(int r, int c, std::vector<T> data) : rows_(r), cols_(c), data_(data) {}
+
         // # Get matrix rows or cols.
         int rows() const { return this->rows_; }
         int cols() const { return this->cols_; }
@@ -41,6 +44,24 @@ class Matrix {
             return transposed;
         }
 
+        // # Get n-th row.
+        Matrix<T> getRow(int row) {
+            Matrix<T> result (1, this->cols_, 0);
+            for(int i = 0; i < this->cols_; i++) {
+                result(0, i) = (*this)(row, i);
+            }
+            return result;
+        }
+
+        // # Basic print, should be updated later.
+        void basicPrint() {
+            for(size_t i = 0; i < this->rows_; i++) {
+                for(size_t j = 0; j < this->cols_; j++)
+                    std::cout << (*this)(i,j) << " ";
+                std::cout << std::endl;
+            }
+        }
+
         // # Read-write access. [int parameters]
         T& operator() (int row, int col) {
             return this->data_[row * this->cols_ + col];
@@ -48,6 +69,11 @@ class Matrix {
 
         // # Read-write access. [size_t parameters]
         T& operator() (size_t row, size_t col) {
+            return this->data_[row * this->cols_ + col];
+        }
+
+        // # Read-only access. [for const's]
+        const T& operator() (int row, int col) const {
             return this->data_[row * this->cols_ + col];
         }
 
@@ -67,8 +93,8 @@ class Matrix {
 
             // # Matrix-matrix multiplication algorithm.
             for(size_t i = 0; i < this->rows_; i++) {
-                for(size_t j = 0; j < other.cols_; j++) {
-                    T value = static_cast<T>(0);
+                for(size_t j = 0; j < other.cols(); j++) {
+                    T value = 0;
                     for(size_t k = 0; k < this->cols_; k++) {
                         value += (*this)(i,k) * other(k,j);
                     }
@@ -80,11 +106,12 @@ class Matrix {
             return result;
         }
 
+        // # Matrix<T>-Matrix<T> addition.
         Matrix<T> operator+ (const Matrix<T>& other) const {
-            
+
             // # Guarantee equal dimensions for matrix-matrix addition.
-            assert(this->rows_ == other.rows_);
-            assert(this->cols_ == other.cols_);
+            assert(this->rows_ == other.rows());
+            assert(this->cols_ == other.cols());
 
             // # Create matrix to store result.
             Matrix<T> result (this->rows_, this->cols_, 0);
@@ -98,6 +125,7 @@ class Matrix {
             return result;
         }
 
+        // # Matrix<T>-Matrix<T> subtraction.
         Matrix<T> operator- (const Matrix<T>& other) const {
             
             // # Guarantee equal dimensions for matrix-matrix subtraction.
@@ -111,6 +139,19 @@ class Matrix {
             for(size_t i = 0; i < this->rows_; i++)
                 for(size_t j = 0; j < this->cols_; j++)
                     result(i,j) = (*this)(i,j) - other(i,j);
+
+            // # Return result.
+            return result;
+        }
+
+        Matrix<T> operator* (const T& other) const {
+            // # Create matrix to store result.
+            Matrix<T> result (this->rows_, this->cols_, 0);
+
+            // # Matrix-float multiplication algorithm.
+            for(size_t i = 0; i < this->rows_; i++)
+                for(size_t j = 0; j < this->cols_; j++)
+                    result(i,j) = (*this)(i,j) * other;
 
             // # Return result.
             return result;
