@@ -42,9 +42,16 @@ class Layer {
         Matrix<T>& weights() {
             return this->weights_;
         }
+        const Matrix<T>& weights() const {
+            return this->weights_;
+        }
 
         // # Access biases.
         Matrix<T>& biases() {
             return this->biases_;
         }
+        const Matrix<T>& biases() const {
+            return this->biases_;
+        }
+
     };

@@ -36,7 +36,7 @@ TEST(NeuralNetworkTests, ManualBackprop) {
 
     for(size_t epoch = 0; epoch < 1000; epoch++) {
         std::vector<Matrix<float>> activations = {x};
-        std::vector<Matrix<float>> zs = {};
+        std::vector<Matrix<float>> zs;
 
         for(Layer<float> * layer : layers) {
             Matrix<float> z = activations.back() * layer->weights() + layer->biases();
@@ -49,15 +49,37 @@ TEST(NeuralNetworkTests, ManualBackprop) {
         
         Matrix<float> delta = y_hat - y_true;
 
-        for(size_t l = layers.size(); l > 0; l--) {
-            Matrix<float> a_prev = activations.at(l);
-            Matrix<float> z = zs[l];
+        for(size_t l = layers.size()-1; l > 0; l) {
 
+            
+            Matrix<float> a_prev = activations.at(l);
+            Matrix<float> z = zs.at(l);
+            
             Matrix<float> dL_dW = delta * a_prev.transpose();
             Matrix<float> dL_db = delta;
-
-            //printMatrix(layers.at(l)->weights());
-            //printMatrix(dL_dW);
+            
+            std::cout << layers.at(l)->weights().rows() << " " << layers.at(l)->weights().cols() << std::endl;
+            std::cout << dL_dW.rows() << " " << dL_dW.cols() << std::endl;
+            layers.at(l)->weights() = layers.at(l)->weights() - dL_dW;
+            std::cout << "Hello world!" << std::endl;
+            
+            printMatrix(layers.at(l)->weights());
+            printMatrix(dL_dW);
         }
     }
+}
+
+TEST(NeuralNetworkTests, ManualBackprop2) {
+    
+    Matrix<float> a1 (1, 2, 2.0f); // # Input layer.
+    Matrix<float> t (1, 2, 20.0f); // # Target output.
+    
+    
+    Layer<float> a2 (2, 2); // # Hidden layer.
+    Layer<float> a3 (2, 2); // # Output layer.
+
+    // # Derivative of the loss function w.r.t. output layer.
+    auto dE = [](Matrix<float> y, Matrix<float> t) {
+        return (t - y) * (t - y);
+    };
 }
