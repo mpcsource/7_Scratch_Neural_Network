@@ -35,7 +35,8 @@ class Layer {
 
         // # Calculate z of layer.
         Matrix<T> calculate_z(Matrix<T> x) {
-            return x * this->weights_.transpose() + this->biases_;
+
+            return x * this->weights_ + this->biases_;
         }
 
         // # One iteration of backprop.
@@ -49,9 +50,9 @@ class Layer {
             Matrix<float> dE_da = (a - y) * 2;
             Matrix<float> delta = da_dz * dE_da;
 
-            Matrix<float> dE_dw2 = dz_dw * delta;
+            Matrix<float> dE_dw = dz_dw * delta;
 
-            this->weights_ = this->weights_ - dE_dw2 * learning_rate;
+            this->weights_ = this->weights_ - dE_dw * learning_rate;
 
             // # Update biases.
 

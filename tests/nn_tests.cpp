@@ -478,14 +478,8 @@ TEST(NeuralNetworkTests, SimpleModel) {
     Matrix<float> y (10, 1, y_data_);
     Matrix<float> x (10, 1, x_data_);
 
-    Layer<float> l2 (10, 1);
-    Layer<float> l3 (1, 1);
-    Layer<float> l4 (1, 1);
-    Layer<float> l5 (1, 1);
-    Layer<float> l6 (1, 1);
-    Layer<float> l7 (1, 1);
-    Layer<float> l8 (1, 1);
-    Layer<float> l9 (1, 1);
+    Layer<float> l2 (4, 1);
+    Layer<float> l3 (1, 4);
 
     Model<float> model;
     model.appendLayer(l2);

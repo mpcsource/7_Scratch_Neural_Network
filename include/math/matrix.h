@@ -85,6 +85,12 @@ class Matrix {
         // # Matrix<T>-Matrix<T> multiplication.
         Matrix<T> operator* (const Matrix<T>& other) const {
 
+            std::cout << "Multiplying matrices: "
+                    << this->rows_ << "x" << this->cols_ << " * "
+                    << other.rows() << "x" << other.cols() << std::endl;
+
+
+
             // # Guarantee valid dimensions for matrix-matrix multiplication.
             assert(this->cols_ == other.rows_);
 
@@ -107,7 +113,7 @@ class Matrix {
         }
 
         // # Matrix<T>-Matrix<T> addition.
-        Matrix<T> operator+ (const Matrix<T>& other) const {
+        /*Matrix<T> operator+ (const Matrix<T>& other) const {
 
             // # Guarantee equal dimensions for matrix-matrix addition.
             assert(this->rows_ == other.rows());
@@ -123,7 +129,28 @@ class Matrix {
 
             // # Return result.
             return result;
+        }*/
+        Matrix<T> operator+ (const Matrix<T>& other) const {
+            bool same_shape = this->rows_ == other.rows() && this->cols_ == other.cols();
+            bool broadcast_row = other.rows() == 1 && this->cols_ == other.cols();
+        
+            assert(same_shape || broadcast_row); // Accept exact or row-broadcast
+        
+            Matrix<T> result (this->rows_, this->cols_, 0);
+        
+            for(int i = 0; i < this->rows_; i++) {
+                for(int j = 0; j < this->cols_; j++) {
+                    if (same_shape) {
+                        result(i,j) = (*this)(i,j) + other(i,j);
+                    } else {
+                        result(i,j) = (*this)(i,j) + other(0,j); // Repeat the row
+                    }
+                }
+            }
+        
+            return result;
         }
+        
 
         // # Matrix<T>-Matrix<T> subtraction.
         Matrix<T> operator- (const Matrix<T>& other) const {
