@@ -35,8 +35,9 @@ class Layer {
 
         // # Calculate z of layer.
         Matrix<T> calculate_z(Matrix<T> x) {
+            Matrix<T> result = x * this->weights_;
 
-            return x * this->weights_ + this->biases_;
+            return result + this->biases_;
         }
 
         // # One iteration of backprop.
