@@ -21,7 +21,7 @@ class Layer {
         
 
     public:
-        Layer(int n, int f) : neurons_(n), features_(f), weights_(Matrix<T>(n,f,1)), biases_(Matrix<T>(1,n,1)) {} /* Biases might be wrong, check later. */
+        Layer(int n, int f) : neurons_(n), features_(f), weights_(Matrix<T>(n,f,1)), biases_(Matrix<T>(n,1,1)) {} /* Biases might be wrong, check later. */
     
         // # Perform full pass.
         Matrix<T> pass(Matrix<T> x) {
@@ -35,9 +35,10 @@ class Layer {
 
         // # Calculate z of layer.
         Matrix<T> calculate_z(Matrix<T> x) {
-            Matrix<T> result = x * this->weights_;
-
-            return result + this->biases_;
+            //Matrix<T> z = x * this->weights_;
+            //z = z + this->biases_;
+            //return z;
+            Matrix<T> input = 
         }
 
         // # One iteration of backprop.

@@ -50,9 +50,10 @@ class Model {
                     Matrix<T> x = X.getRow(train_i);
                     Matrix<T> y = Y.getRow(train_i);
 
-                    for(size_t layer_i = this->layers.size()-1; layer_i > 0; layer_i--) {
+                    for(int layer_i = this->layers.size()-1; layer_i >= 0; layer_i--) {
                         (this->layers[layer_i])->backprop(x, y, learning_rate);
-                        x = (this->layers[layer_i])->pass(x);
+                        //x = (this->layers[layer_i])->pass(x);
+                        x = this->pass(x);
                     }
                 }
             }

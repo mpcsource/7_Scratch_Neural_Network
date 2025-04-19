@@ -85,12 +85,6 @@ class Matrix {
         // # Matrix<T>-Matrix<T> multiplication.
         Matrix<T> operator* (const Matrix<T>& other) const {
 
-            std::cout << "Multiplying matrices: "
-                    << this->rows_ << "x" << this->cols_ << " * "
-                    << other.rows() << "x" << other.cols() << std::endl;
-
-
-
             // # Guarantee valid dimensions for matrix-matrix multiplication.
             assert(this->cols_ == other.rows_);
 
