@@ -22,7 +22,33 @@ class Model {
             this->layers.push_back(&layer); 
         }
         
+        Matrix<T> passOne(Matrix<T> x) {
+            for(Layer<T> * layer: this->layers) {
+                x = layer->pass(x);
+            }
+            return x;
+        }
+
         Matrix<T> pass(Matrix<T> x) {
+
+            // ME V2
+            size_t batch_size = x.rows();
+            size_t output_size = (this->layers.back())->weights().rows();
+
+            Matrix<T> y_hat (batch_size, output_size);
+
+            for(size_t i = 0; i < x.rows(); i++) {
+                Matrix x_ = x.getRow(i);
+                Matrix y_ = this->passOne(x_);
+                assert(y_hat.cols() == y_.cols());
+                for(size_t j = 0; j < y_.cols(); j++) {
+                    y_hat(i,j) = y_(0UL,j);
+                }
+            } 
+
+            return y_hat;
+
+            /** CHAT GPT
             size_t batch_size = x.rows();
             size_t output_size = (this->layers.back())->weights().cols();
 
@@ -38,6 +64,18 @@ class Model {
                 }
             }
             return y_hat;
+            */
+            
+            /* ME
+            Matrix<T> y_hat = x;
+            for (size_t x_i = 0; x_i < x.rows(); x_i++) {
+                T y_hat_i = y_hat(x_i, 0UL);
+                for(size_t layer_i = 0; layer_i < this->layers.size(); layer_i++) {
+                    y_hat_i = this->layers.at(layer_i)->pass(Matrix(0, 0, y_hat_i))(0,0); // Not the best way to do it.
+                }
+                y_hat(x_i, 0UL) = y_hat_i;
+            }
+            return y_hat;*/
         }
 
         void train(Matrix<T> X, Matrix<T> Y, size_t iterations = 1000, float learning_rate = 0.0001f) {
@@ -52,8 +90,8 @@ class Model {
 
                     for(int layer_i = this->layers.size()-1; layer_i >= 0; layer_i--) {
                         (this->layers[layer_i])->backprop(x, y, learning_rate);
+                        //x = this->pass(x);
                         //x = (this->layers[layer_i])->pass(x);
-                        x = this->pass(x);
                     }
                 }
             }

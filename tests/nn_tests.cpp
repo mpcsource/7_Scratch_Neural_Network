@@ -477,6 +477,30 @@ TEST(NeuralNetworkTests, SimpleModel) {
     Matrix<float> y (10, 1, y_data_);
     Matrix<float> x (10, 1, x_data_);
 
+    Layer<float> l2 (1,1);
+    Layer<float> l3 (1,1);
+
+    Model<float> model;
+    model.appendLayer(l2);
+    model.appendLayer(l3);
+
+
+    model.train(x, y, 100UL);
+
+
+
+    Matrix x_sample = x.getRow(0);
+    x_sample.basicPrint();
+    //Matrix y_hat = model.passOne(x_sample);
+//
+    //std::cout << "y_hat:" << std::endl;
+    //y_hat.basicPrint();
+
+}
+
+TEST(NeuralNetworkTests, ModelMultipleNeurons) {
+    Matrix<float> x (10, 1, 2.0f);
+
     Layer<float> l2 (10,1);
     Layer<float> l3 (1,10);
 
@@ -484,12 +508,62 @@ TEST(NeuralNetworkTests, SimpleModel) {
     model.appendLayer(l2);
     model.appendLayer(l3);
 
+    Matrix a = model.pass(x);
+    a.basicPrint();
+}
 
-    model.train(x, y, 10000UL);
+TEST(NeuralNetworkTests, ModelMultipleNeuronsTrain) {
+    Matrix<float> x (10, 1, 2.0f);
+    Matrix<float> y (10, 1, 5.0f);
 
-    Matrix<float> y_hat = model.pass(x);
+    Layer<float> l2 (10,1);
+    Layer<float> l3 (1,10);
 
-    std::cout << "y_hat:" << std::endl;
-    y_hat.basicPrint();
+    Model<float> model;
+    model.appendLayer(l2);
+    model.appendLayer(l3);
 
+    model.train(x, y);
+
+    Matrix a = model.pass(x);
+    a.basicPrint();
+}
+
+TEST(NeuralNetworkTests, LayersTest) {
+    // # Input created.
+    Matrix<float> input(1, 1, 5.0f);
+
+    // # Print input.
+    std::cout << "Input:" << std::endl;
+    input.basicPrint();
+    
+    // # Layers created.
+    Layer<float> l1 (10, 1);
+    Layer<float> l2 (1, 10);
+    Layer<float> l3 (2, 1);
+    
+    // # Layer 1 printed.
+    std::cout << "Layer 1:" << std::endl;
+    l1.debugPrint();
+
+    // # Activation 1 created.
+    Matrix a1 = l1.pass(input);
+
+    // # Activation 1 printed.
+    std::cout << "a1:" << std::endl;
+    a1.basicPrint();
+
+    // # Activation 2 created.
+    Matrix a2 = l2.pass(a1);
+
+    // # Activation 2 printed.
+    std::cout << "a2:" << std::endl;
+    a2.basicPrint();
+
+    // # Activation 3 created.
+    Matrix a3 = l3.pass(a2);
+
+    // # Activation 3 printed.
+    std::cout << "a3:" << std::endl;
+    a3.basicPrint();
 }

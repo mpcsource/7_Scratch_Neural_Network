@@ -21,7 +21,7 @@ class Layer {
         
 
     public:
-        Layer(int n, int f) : neurons_(n), features_(f), weights_(Matrix<T>(n,f,1)), biases_(Matrix<T>(n,1,1)) {} /* Biases might be wrong, check later. */
+        Layer(int n, int f) : neurons_(n), features_(f), weights_(Matrix<T>(n,f,1)), biases_(Matrix<T>(1,n,1)) {} /* Biases might be wrong, check later. */
     
         // # Perform full pass.
         Matrix<T> pass(Matrix<T> x) {
@@ -35,15 +35,15 @@ class Layer {
 
         // # Calculate z of layer.
         Matrix<T> calculate_z(Matrix<T> x) {
-            //Matrix<T> z = x * this->weights_;
-            //z = z + this->biases_;
-            //return z;
-            Matrix<T> input = 
+            /*Matrix<T> z = this->weights_ * x;
+            z = z + this->biases_;
+            return z;*/
+            return x * this->weights_.transpose() + this->biases_;
         }
 
         // # One iteration of backprop.
         void backprop(Matrix<float> x, Matrix<float> y, float learning_rate) {
-            // # Update weights.
+            // # Forward pass.
             Matrix<float> a = pass(x);
 
             Matrix<float> dz_dw = x;
@@ -94,6 +94,14 @@ class Layer {
         }
         const Matrix<T>& biases() const {
             return this->biases_;
+        }
+
+        // # Print weights and biases.
+        void debugPrint() {
+            std::cout << "l1 weights:" << std::endl;
+            this->weights().basicPrint();
+            std::cout << "l1 biases:" << std::endl;
+            this->biases().basicPrint();
         }
 
     };

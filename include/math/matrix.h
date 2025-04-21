@@ -69,7 +69,7 @@ class Matrix {
 
         // # Read-write access. [size_t parameters]
         T& operator() (size_t row, size_t col) {
-            return this->data_[row * this->cols_ + col];
+            return this->data_[(int)row * this->cols_ + (int)col];
         }
 
         // # Read-only access. [for const's]
@@ -79,7 +79,7 @@ class Matrix {
 
         // # Read-only access. [for const's]
         const T& operator() (size_t row, size_t col) const {
-            return this->data_[row * this->cols_ + col];
+            return this->data_[(int)row * this->cols_ + (int)col];
         }
 
         // # Matrix<T>-Matrix<T> multiplication.
