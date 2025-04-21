@@ -21,7 +21,7 @@ class Layer {
         
 
     public:
-        Layer(int n, int f) : neurons_(n), features_(f), weights_(Matrix<T>(n,f,1)), biases_(Matrix<T>(1,n,1)) {} /* Biases might be wrong, check later. */
+        Layer(int n, int f) : neurons_(n), features_(f), weights_(Matrix<T>(n,f,1)), biases_(Matrix<T>(1,n,0)) {} 
     
         // # Perform full pass.
         Matrix<T> pass(Matrix<T> x) {
@@ -42,18 +42,19 @@ class Layer {
         }
 
         // # One iteration of backprop.
-        Matrix<T> backprop(Matrix<float> x, Matrix<float> dE, float learning_rate) {
+        Matrix<T> backprop(Matrix<T> x, Matrix<T> dE, float learning_rate) {
+           
             // # Forward pass.
-            Matrix<float> a = pass(x);
+            Matrix<T> a = pass(x);
 
             // # It's linear so doesn't change.
-            Matrix<float> dZ = dE;
+            Matrix<T> dZ = dE;
 
             // # Loss gradient w.r.t. weights.
-            Matrix<float> dE_dw = dZ.transpose() * x;
+            Matrix<T> dE_dw = dZ.transpose() * x;
 
             // # Loss gradient w.r.t. bias.
-            Matrix<float> dE_db = dZ;
+            Matrix<T> dE_db = dZ;
 
             // # Update weights and biases.
             this->weights_ = this->weights_ - dE_dw * learning_rate;

@@ -131,8 +131,8 @@ class Matrix {
         Matrix<T> operator- (const Matrix<T>& other) const {
             
             // # Guarantee equal dimensions for matrix-matrix subtraction.
-            assert(this->rows_ == other.rows_);
-            assert(this->cols_ == other.cols_);
+            assert(this->rows_ == other.rows());
+            assert(this->cols_ == other.cols());
 
             // # Create matrix to store result.
             Matrix<T> result (this->rows_, this->cols_, 0);
@@ -159,4 +159,19 @@ class Matrix {
             return result;
         }
         
+        Matrix<T> head() {
+            Matrix<T> result(5, this->cols_);
+            for(int i = 0; i < 5; i++)
+                for(int j = 0; j < this->cols_; j++)
+                    result(i,j) = (*this)(i,j);
+            return result;
+        }
+
+        Matrix<T> tail() {
+            Matrix<T> result(5, this->cols_);
+            for(int i = 0; i < 5; i++)
+                for(int j = 0; j < this->cols_; j++)
+                    result(i,j) = (*this)(i+this->rows_-5,j);
+            return result;
+        }
 };

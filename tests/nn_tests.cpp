@@ -2,6 +2,7 @@
 #include "gtest/gtest.h"
 #include "network/layer.h"
 #include "network/model.h"
+#include "data/loader.h"
 
 void printMatrix(Matrix<float> m) {
     for(size_t i = 0; i < m.rows(); i++) {
@@ -565,4 +566,42 @@ TEST(NeuralNetworkTests, LayersTest) {
     // # Activation 3 printed.
     std::cout << "a3:" << std::endl;
     a3.basicPrint();
+}
+
+TEST(NeuralNetworkTests, RealModelRealData) {
+    Matrix<double> data = loadData<double>("../tests/data.csv", ',', true);
+    auto [x_train, y_train, x_test, y_test] = trainTestSplit<double>(data, 8);
+
+    Layer<double> l1 (10, 8);
+    Layer<double> l2 (1, 10);
+
+    Model<double> model;
+    model.appendLayer(l1);
+    model.appendLayer(l2);
+
+    model.train(x_train.head(), y_train.head(), 100000, (1.0E-6));
+
+    Matrix y_hat = model.pass(x_test.head());
+
+    std::cout << "y_hat:" << std::endl;
+    y_hat.basicPrint();
+
+    std::cout << "y true:" << std::endl;
+    y_test.head().basicPrint();
+
+    std::cout << "layer 1 weights:" << std::endl;
+    l1.weights().basicPrint();
+
+    std::cout << "x_train, y_train, x_test (heads):" << std::endl;
+    x_train.head().basicPrint();
+    y_train.head().basicPrint();
+    x_test.head().basicPrint();
+
+
+}
+
+TEST(NeuralNetworkTests, aaa) {
+    Matrix<float> data = loadData<float>("../tests/data.csv", ',', true);
+    auto [x_train, y_train, x_test, y_test] = trainTestSplit<float>(data, 8);
+
 }
