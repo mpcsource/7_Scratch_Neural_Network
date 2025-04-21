@@ -42,27 +42,25 @@ class Layer {
         }
 
         // # One iteration of backprop.
-        void backprop(Matrix<float> x, Matrix<float> y, float learning_rate) {
+        Matrix<T> backprop(Matrix<float> x, Matrix<float> dE, float learning_rate) {
             // # Forward pass.
             Matrix<float> a = pass(x);
 
-            Matrix<float> dz_dw = x;
+            // # It's linear so doesn't change.
+            Matrix<float> dZ = dE;
 
-            Matrix<float> da_dz = this->weights_;
-            Matrix<float> dE_da = (a - y) * 2;
-            Matrix<float> delta = da_dz * dE_da;
+            // # Loss gradient w.r.t. weights.
+            Matrix<float> dE_dw = dZ.transpose() * x;
 
-            Matrix<float> dE_dw = dz_dw * delta;
+            // # Loss gradient w.r.t. bias.
+            Matrix<float> dE_db = dZ;
 
+            // # Update weights and biases.
             this->weights_ = this->weights_ - dE_dw * learning_rate;
-
-            // # Update biases.
-
-            Matrix<float> dz_db (1,1,1.0f);
-            Matrix<float> dE_db = dz_db * delta;
-
             this->biases_ = this->biases_ - dE_db * learning_rate;
 
+            // # Return 
+            return dZ * this->weights_;
         }
 
         // # Update all weights.

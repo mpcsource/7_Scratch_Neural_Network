@@ -21,6 +21,7 @@ TEST(NeuralNetworkTests, ForwardPass) {
     printMatrix(l1_z);
 }
 
+/* Bad tests.
 TEST(NeuralNetworkTests, ManualBackprop) {
     Matrix<float> x (1, 2, 2.0f);
     Matrix<float> y_true (1, 2, 20.0f);
@@ -114,6 +115,7 @@ TEST(NeuralNetworkTests, ManualBackprop2) {
 
     }
 }
+*/
 
 TEST(NeuralNetworkTests, OneMatrixLayer) {
 
@@ -477,24 +479,21 @@ TEST(NeuralNetworkTests, SimpleModel) {
     Matrix<float> y (10, 1, y_data_);
     Matrix<float> x (10, 1, x_data_);
 
-    Layer<float> l2 (1,1);
-    Layer<float> l3 (1,1);
+    Layer<float> l2 (100,1);
+    Layer<float> l3 (1,100);
 
     Model<float> model;
     model.appendLayer(l2);
     model.appendLayer(l3);
 
 
-    model.train(x, y, 100UL);
+    model.train(x, y, 1000UL);
 
 
+    Matrix y_hat = model.pass(x);
 
-    Matrix x_sample = x.getRow(0);
-    x_sample.basicPrint();
-    //Matrix y_hat = model.passOne(x_sample);
-//
-    //std::cout << "y_hat:" << std::endl;
-    //y_hat.basicPrint();
+    std::cout << "y_hat:" << std::endl;
+    y_hat.basicPrint();
 
 }
 
