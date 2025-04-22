@@ -572,14 +572,14 @@ TEST(NeuralNetworkTests, RealModelRealData) {
     Matrix<double> data = loadData<double>("../tests/data.csv", ',', true);
     auto [x_train, y_train, x_test, y_test] = trainTestSplit<double>(data, 8);
 
-    Layer<double> l1 (10, 8);
-    Layer<double> l2 (1, 10);
+    Layer<double> l1 (10, 8, "glorot");
+    Layer<double> l2 (1, 10, "glorot");
 
     Model<double> model;
     model.appendLayer(l1);
     model.appendLayer(l2);
 
-    model.train(x_train.head(), y_train.head(), 100000, (1.0E-6));
+    model.train(x_train.head(), y_train.head(), 100, (1.0E-10));
 
     Matrix y_hat = model.pass(x_test.head());
 
@@ -604,4 +604,9 @@ TEST(NeuralNetworkTests, aaa) {
     Matrix<float> data = loadData<float>("../tests/data.csv", ',', true);
     auto [x_train, y_train, x_test, y_test] = trainTestSplit<float>(data, 8);
 
+}
+
+TEST(NeuralNetworkTests, Glorot) {
+    Layer<float> layer (10, 10, "glorot");
+    layer.weights().basicPrint();
 }
