@@ -2,6 +2,7 @@
 #include <vector>
 #include <math.h>
 #include "math/matrix.h"
+#include "math/random.h"
 
 template <
     // # Generic type name.
@@ -21,8 +22,20 @@ class Layer {
         
 
     public:
+        // # Initialises weights as 1 and biases as 0.
         Layer(int n, int f) : neurons_(n), features_(f), weights_(Matrix<T>(n,f,1)), biases_(Matrix<T>(1,n,0)) {} 
     
+        // # Uses one of multiple initialisation functions.
+        Layer(int n, int f, std::string init_func) : neurons_(n), features_(f), weights_(Matrix<T>(n,f,1)), biases_(Matrix<T>(1,n,0)) {
+            if(init_func == "glorot")
+                for(int i = 0; i < n; i++)
+                    for(int j = 0; j < f; j++) {
+                        T limit = sqrt(6.0f/(this->features_+this->neurons_));
+                        std::cout << limit << std::endl;
+                        this->weights_(i,j) = randomRange(-limit, limit); // # This obviously needs to change.   
+                    }
+        }
+
         // # Perform full pass.
         Matrix<T> pass(Matrix<T> x) {
             return calculate_activation(calculate_z(x));
