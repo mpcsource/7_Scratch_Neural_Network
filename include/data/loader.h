@@ -118,3 +118,23 @@ std::tuple<Matrix<T>, Matrix<T>, Matrix<T>, Matrix<T>> trainTestSplit(Matrix<T> 
 
     return { x_train, y_train, x_test, y_test };
 }
+
+template <
+    // # Generic type name.
+    typename T,
+    // # Restrict type to numbers only.
+    typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type 
+>
+inline Matrix<T> normalizeData() {
+    return Matrix<T>(1,1,1);
+}
+
+template <
+    // # Generic type name.
+    typename T,
+    // # Restrict type to numbers only.
+    typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type 
+>
+inline Matrix<T> unnormalizeData() {
+    return Matrix<T>(1,1,1);
+}
