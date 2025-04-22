@@ -1,7 +1,7 @@
 # Matrix multiplication
 # Backpropagation
 # Pseudorandom number generator
-# Glorot initialization
+# Glorot/He initialization
 # Layer
 # Model
 # Data loading
