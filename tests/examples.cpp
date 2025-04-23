@@ -33,7 +33,7 @@ TEST(Examples, CaliforniaHousingPrices) {
     y_test = y_test * (0.00001);
 
     // # Train model.
-    model.train(x_train, y_train, 1000, 1.0E-7);
+    model.train(x_train, y_train, 100, 1.0E-6);
 
     // # Make prediction.
     Matrix y_hat = model.pass(x_test.head());
