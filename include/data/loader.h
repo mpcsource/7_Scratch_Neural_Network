@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include "math/matrix.h"
+#include <math.h>
 
 template <
     // # Generic type name.
@@ -125,8 +126,36 @@ template <
     // # Restrict type to numbers only.
     typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type 
 >
-inline Matrix<T> normalizeData() {
-    return Matrix<T>(1,1,1);
+// # Normalize data and return mean and standard deviation.
+inline std::tuple<Matrix<T>, std::vector<T>, std::vector<T>> normalizeData(Matrix<T> data) {
+    
+    std::vector<T> means (data.cols());
+    std::vector<T> stds (data.cols());
+
+    // # Calculate mean per column/feature.
+    for(int j = 0; j < data.cols(); j++) {
+        T mean = 0;
+        for(int i = 0; i < data.rows(); i++)
+            mean += data(i,j);
+        mean /= data.rows();
+        means[j] = mean;
+    }
+        
+    // # Calculate standard deviation per column/feature.
+    for(int j = 0; j < data.cols(); j++) {
+        T std = 0;
+        for(int i = 0; i < data.rows(); i++)
+            std += (data(i,j) - means[j]) * (data(i,j) - means[j]);
+        std /= data.rows();
+        std = sqrt(std);
+        if(std < 1e-5)
+            std = 1e-5;
+        stds[j] = std;
+    }
+
+    data = normalizeData(data, means, stds);
+
+    return {data, means, stds};
 }
 
 template <
@@ -135,6 +164,26 @@ template <
     // # Restrict type to numbers only.
     typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type 
 >
-inline Matrix<T> unnormalizeData() {
-    return Matrix<T>(1,1,1);
+// # Normalize data with given mean and standard deviation.
+inline Matrix<T> normalizeData(Matrix<T> data, std::vector<T> means, std::vector<T> stds) {
+    
+    for(int i = 0; i < data.rows(); i++)
+        for(int j = 0; j < data.cols(); j++) {
+            if (stds[j] != 0)
+                data(i,j) = (data(i,j) - means[j]) / stds[j];
+            else
+                data(i,j) = 0;
+        }
+    
+    return data;
+}
+
+template <
+    // # Generic type name.
+    typename T,
+    // # Restrict type to numbers only.
+    typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type 
+>
+inline Matrix<T> unnormalizeData(Matrix<T> data, float mean, float standard) {
+    return data;
 }
