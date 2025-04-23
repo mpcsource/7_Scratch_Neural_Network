@@ -52,6 +52,8 @@ class Model {
             int training_rows = X.rows();
 
             for(size_t iteration = 0; iteration < iterations; iteration++) {
+                std::cout << "Iteration number: " << iteration+1 << std::endl;
+
                 for(size_t train_i = 0; train_i < training_rows; train_i++) {
                     
                     // # Get one sample.
