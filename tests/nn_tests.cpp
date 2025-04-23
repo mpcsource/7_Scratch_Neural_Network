@@ -600,6 +600,47 @@ TEST(NeuralNetworkTests, RealModelRealData) {
 
 }
 
+TEST(NeuralNetworkTests, RealModelStandardizedData) {
+    Matrix<double> data = loadData<double>("../tests/data.csv", ',', true);
+    auto [x_train, y_train, x_test, y_test] = trainTestSplit<double>(data, 8);
+
+    Layer<double> l1 (10, 8, "glorot");
+    Layer<double> l2 (1, 10, "glorot");
+
+    Model<double> model;
+    model.appendLayer(l1);
+    model.appendLayer(l2);
+
+    std::vector<double> mean, deviation;
+    std::tie(x_train, mean, deviation) = normalizeData<double>(x_train);
+    x_test = normalizeData<double>(x_test, mean, deviation);
+
+    y_train = y_train * (0.00001);
+    y_test = y_test * (0.00001);
+    
+
+    model.train(x_train, y_train, 1000, 1.0E-5);
+
+    Matrix y_hat = model.pass(x_test.head());
+    y_hat = y_hat * 100000;
+    y_train = y_train * 100000;
+    y_test = y_test * 100000;
+
+    std::cout << "y_hat:" << std::endl;
+    y_hat.basicPrint();
+
+    std::cout << "y true:" << std::endl;
+    y_test.head().basicPrint();
+
+    std::cout << "layer 1 weights:" << std::endl;
+    l1.weights().basicPrint();
+
+    std::cout << "x_train, y_train, x_test (heads):" << std::endl;
+    x_train.head().basicPrint();
+    y_train.head().basicPrint();
+    x_test.head().basicPrint();
+}
+
 TEST(NeuralNetworkTests, aaa) {
     Matrix<float> data = loadData<float>("../tests/data.csv", ',', true);
     auto [x_train, y_train, x_test, y_test] = trainTestSplit<float>(data, 8);
@@ -609,4 +650,29 @@ TEST(NeuralNetworkTests, aaa) {
 TEST(NeuralNetworkTests, Glorot) {
     Layer<float> layer (10, 10, "glorot");
     layer.weights().basicPrint();
+}
+
+TEST(NeuralNetworkTests, Test2) {
+    Matrix<double> data = loadData<double>("../tests/data.csv", ',', true);
+    auto [x_train, y_train, x_test, y_test] = trainTestSplit<double>(data, 8);
+
+    Layer<double> l1 (10, 8, "glorot");
+    Layer<double> l2 (1, 10, "glorot");
+
+    Model<double> model;
+    model.appendLayer(l1);
+    model.appendLayer(l2);
+
+    std::vector<double> mean, deviation;
+    std::tie(x_train, mean, deviation) = normalizeData<double>(x_train);
+    x_test = normalizeData<double>(x_test, mean, deviation);
+
+    y_train = y_train * (0.00001);
+    y_test = y_test * (0.00001);
+
+
+    x_train.head().basicPrint();
+    x_test.head().basicPrint();
+    y_train.head().basicPrint();
+    y_test.head().basicPrint();
 }
