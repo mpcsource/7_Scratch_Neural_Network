@@ -31,7 +31,6 @@ class Layer {
                 for(int i = 0; i < n; i++)
                     for(int j = 0; j < f; j++) {
                         T limit = sqrt(6.0f/(this->features_+this->neurons_));
-                        std::cout << limit << std::endl;
                         this->weights_(i,j) = randomRange(-limit, limit); // # This obviously needs to change.   
                     }
         }
