@@ -19,7 +19,7 @@ From ./:
 # Versions
 
 ## Alpha 0.1 (Current)
-* A functioning dense-layered sequential linear neural network that can learn (backpropagation) and predict (forwardpass).
+* A functioning dense-layered sequential linear neural network that can learn (backpropagation) and predict (forward pass).
 * Loads data, does matrix operations, has a pseudorandom number generator.
 * Has simple testing.
 
@@ -32,6 +32,9 @@ From ./:
     * Glorot initialization.
     * Error/loss/cost functions.
 * Asserts in every method.
+* Batching/mini-batching.
 
 ## Future
 * Visual recognition?
+* Rprop?
+* Adam
