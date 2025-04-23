@@ -9,3 +9,5 @@
 * Fisher-Yates shuffle Algorithm
 # What can you do with this library?
 # Examples
+# Data normalization
+# How to use?
