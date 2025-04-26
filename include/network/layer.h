@@ -12,9 +12,10 @@ template <
 >
 
 class Layer {
-    private:
+    protected:
         Matrix<T> weights_;
         Matrix<T> biases_;
+        Matrix<T> input_;
         // # neurons_: amount of neurons in the layer, also rows of layer output.
         // # features_: amount of features in one input.
         int neurons_, features_; 
@@ -37,11 +38,12 @@ class Layer {
 
         // # Perform full pass.
         Matrix<T> pass(Matrix<T> x) {
+            input_ = x;
             return calculate_activation(calculate_z(x));
         }   
         
         // # Calculate activation of layer. 
-        Matrix<T> calculate_activation(Matrix<T> x) {
+        virtual Matrix<T> calculate_activation(Matrix<T> x) {
             return x; // # Currently linear.
         }
 
@@ -53,6 +55,10 @@ class Layer {
             return x * this->weights_.transpose() + this->biases_;
         }
 
+        virtual Matrix<T> dZ(Matrix<T> dE) {
+            return dE;
+        }
+
         // # One iteration of backprop.
         Matrix<T> backprop(Matrix<T> x, Matrix<T> dE, float learning_rate) {
            
@@ -60,7 +66,7 @@ class Layer {
             Matrix<T> a = pass(x);
 
             // # It's linear so doesn't change.
-            Matrix<T> dZ = dE;
+            Matrix<T> dZ = this->dZ(dE);
 
             // # Loss gradient w.r.t. weights.
             Matrix<T> dE_dw = dZ.transpose() * x;

@@ -9,6 +9,8 @@
 #pragma once
 #include <vector>
 #include <type_traits>
+//#include <omp.h>
+
 
 template <
     // # Generic type name.
@@ -92,6 +94,7 @@ class Matrix {
             Matrix<T> result (this->rows_, other.cols_, 0);
 
             // # Matrix-matrix multiplication algorithm.
+            //#pragma omp parallel for
             for(size_t i = 0; i < this->rows_; i++) {
                 for(size_t j = 0; j < other.cols(); j++) {
                     T value = 0;
@@ -117,6 +120,7 @@ class Matrix {
             Matrix<T> result (this->rows_, this->cols_, 0);
 
             // # Matrix-matrix addition algorithm.
+            //#pragma omp parallel for
             for(size_t i = 0; i < this->rows_; i++)
                 for(size_t j = 0; j < this->cols_; j++)
                     result(i,j) = (*this)(i,j) + other(i,j);

@@ -47,18 +47,22 @@ class Model {
             return y_hat;
         }
 
-        void train(Matrix<T> X, Matrix<T> Y, size_t iterations = 1000, float learning_rate = 0.0001f) {
+        void train(Matrix<T> X, Matrix<T> Y, size_t iterations = 1000, float learning_rate = 0.0001f, int batches_size = 32) {
             assert(X.rows() == Y.rows());
-            int training_rows = X.rows();
 
             for(size_t iteration = 0; iteration < iterations; iteration++) {
-                std::cout << "Iteration number: " << iteration+1 << std::endl;
+                std::cout << "Iteration number: " << iteration+1 << "/" << iterations << " " << ((float)(iteration+1)/(float)iterations)*100.0f << "%" << std::endl;
 
-                for(size_t train_i = 0; train_i < training_rows; train_i++) {
-                    
+                auto [batch_x, batch_y] = getBatchOfSize<T>(X, Y, batches_size);
+                int batch_size = batch_x.rows();
+                
+
+                for(size_t train_i = 0; train_i < batch_size; train_i++) {
+                    //std::cout << "Epoch number: " << train_i+1 << "/" << batch_size << std::endl;
+
                     // # Get one sample.
-                    Matrix<T> x = X.getRow(train_i);
-                    Matrix<T> y = Y.getRow(train_i);
+                    Matrix<T> x = batch_x.getRow(train_i);
+                    Matrix<T> y = batch_y.getRow(train_i);
 
                     // # Forward pass & store activations.
                     std::vector<Matrix<T>> activations;

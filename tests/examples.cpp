@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "network/layer.h"
+#include "network/relu_layer.h"
 #include "network/model.h"
 #include "data/loader.h"
 
@@ -11,10 +12,11 @@ TEST(Examples, CaliforniaHousingPrices) {
     auto [x_train, y_train, x_test, y_test] = trainTestSplit<double>(data, 8);
 
     // # Create layers.
-    Layer<double> l1 (10, 8, "glorot");
-    Layer<double> l2 (10, 10, "glorot");
-    Layer<double> l3 (10, 10, "glorot");
-    Layer<double> l4 (1, 10, "glorot");
+
+    Layer<double> l1 (50, 8, "glorot");
+    Layer<double> l2 (30, 50, "glorot");
+    Layer<double> l3 (20, 30, "glorot");
+    Layer<double> l4 (1, 20, "glorot");
 
     // # Create model and append layers.
     Model<double> model;
@@ -33,7 +35,7 @@ TEST(Examples, CaliforniaHousingPrices) {
     y_test = y_test * (0.00001);
 
     // # Train model.
-    model.train(x_train, y_train, 100, 1.0E-6);
+    model.train(x_train, y_train, 1000, 1.0E-10, 32);
 
     // # Make prediction.
     Matrix y_hat = model.pass(x_test.head());
@@ -42,6 +44,78 @@ TEST(Examples, CaliforniaHousingPrices) {
     y_hat = y_hat * 100000;
     y_train = y_train * 100000;
     y_test = y_test * 100000;
+
+    // # y_hat vs y_true.
+    std::cout << "Y_hat:" << std::endl;
+    y_hat.basicPrint();
+    std::cout << "Y_true:" << std::endl;
+    y_test.head().basicPrint();
+}
+
+TEST(Examples, MNISTDigitRecognition) {
+    // # Load whole data.
+    Matrix<float> data = loadData<float>("../tests/mnist_train.csv", ',', false, true, 10000);
+
+    // # Split training and testing data.
+    auto [x_train, y_train, x_test, y_test] = trainTestSplit<float>(data, 0);
+
+    // # Standardize x_train and x_test.
+    std::vector<float> mean, deviation;
+    std::tie(x_train, mean, deviation) = normalizeData<float>(x_train);
+    x_test = normalizeData<float>(x_test, mean, deviation);
+
+    // # Create layers.
+    Layer<float> hidden2 (16, 28*28, "glorot");
+    Layer<float> hidden3 (16, 16, "glorot");
+    Layer<float> hidden4 (1, 16, "glorot");
+
+    // # Create model and append layers.
+    Model<float> model;
+    model.appendLayer(hidden2);
+    model.appendLayer(hidden3);
+    model.appendLayer(hidden4);
+
+    // # Train model.
+    model.train(x_train, y_train, 100, 1.0E-7);
+
+    // # Make prediction.
+    Matrix y_hat = model.pass(x_test.head());
+
+    // # y_hat vs y_true.
+    std::cout << "Y_hat:" << std::endl;
+    y_hat.basicPrint();
+    std::cout << "Y_true:" << std::endl;
+    y_test.head().basicPrint();
+}
+
+TEST(ReLU, MNISTDigitRecognition) {
+    // # Load whole data.
+    Matrix<float> data = loadData<float>("../tests/mnist_train.csv", ',', false, true, 10000);
+
+    // # Split training and testing data.
+    auto [x_train, y_train, x_test, y_test] = trainTestSplit<float>(data, 0);
+
+    // # Standardize x_train and x_test.
+    std::vector<float> mean, deviation;
+    std::tie(x_train, mean, deviation) = normalizeData<float>(x_train);
+    x_test = normalizeData<float>(x_test, mean, deviation);
+
+    // # Create layers.
+    ReLU_Layer<float> hidden2 (16, 28*28, "glorot");
+    ReLU_Layer<float> hidden3 (16, 16, "glorot");
+    ReLU_Layer<float> hidden4 (1, 16, "glorot");
+
+    // # Create model and append layers.
+    Model<float> model;
+    model.appendLayer(hidden2);
+    model.appendLayer(hidden3);
+    model.appendLayer(hidden4);
+
+    // # Train model.
+    model.train(x_train, y_train, 1000, 1.0E-5, 100);
+
+    // # Make prediction.
+    Matrix y_hat = model.pass(x_test.head());
 
     // # y_hat vs y_true.
     std::cout << "Y_hat:" << std::endl;

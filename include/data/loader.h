@@ -10,7 +10,7 @@ template <
     // # Restrict type to numbers only.
     typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type 
 >
-Matrix<T> loadData(const std::string& path, char separator, bool header) {
+Matrix<T> loadData(const std::string& path, char separator, bool header, bool limitRows = false, int limitRowsAmount = 10000) {
     
     // # Initialise data matrix.
     std::vector<std::vector<T>> data;
@@ -28,6 +28,9 @@ Matrix<T> loadData(const std::string& path, char separator, bool header) {
     // # Iterate over lines.
     for(int iteration = 0; std::getline(file, line); iteration++) {
         
+        if(limitRows && iteration >= limitRowsAmount)
+            break;
+
         // # Ignore header.
         if(iteration == 0 && header)
             continue;
@@ -71,7 +74,7 @@ std::tuple<Matrix<T>, Matrix<T>, Matrix<T>, Matrix<T>> trainTestSplit(Matrix<T> 
     
     // # Shuffle data.
     for(int i = 0; i < data.rows(); i++) {
-        int j = 1; // Should be random.
+        int j = (rand() % data.cols()) + 1;
 
         Matrix<T> a_i = data.getRow(i);
         Matrix<T> a_j = data.getRow(j);
@@ -186,4 +189,32 @@ template <
 >
 inline Matrix<T> unnormalizeData(Matrix<T> data, float mean, float standard) {
     return data;
+}
+
+template <
+    // # Generic type name.
+    typename T,
+    // # Restrict type to numbers only.
+    typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type 
+>
+inline std::tuple<Matrix<T>, Matrix<T>> getBatchOfSize(Matrix<T> X, Matrix<T> Y, int batch_size = 32) {
+    assert(X.rows() == Y.rows());
+    
+    Matrix<T> batch_x (batch_size, X.cols());
+    Matrix<T> batch_y (batch_size, Y.cols());
+
+    for(int i = 0; i < batch_size; i++) {
+        int random_row_index = rand() % X.rows()+1; 
+        auto row_x = X.getRow(random_row_index);
+        auto row_y = Y.getRow(random_row_index);
+        
+        for(int j = 0; j < X.cols(); j++) {
+            batch_x(i,j) = row_x(0,j);
+        }
+        for(int j = 0; j < Y.cols(); j++) {
+            batch_y(i,j) = row_y(0,j);
+        }
+    }
+
+    return {batch_x, batch_y};
 }

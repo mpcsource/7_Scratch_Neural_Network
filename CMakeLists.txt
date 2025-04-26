@@ -25,6 +25,9 @@ file(GLOB_RECURSE TEST_FILES tests/*.cpp)
 # Create a single test executable from all test files
 add_executable(unit_tests ${TEST_FILES})
 
+find_package(OpenMP REQUIRED)
+target_link_libraries(unit_tests PUBLIC OpenMP::OpenMP_CXX)
+
 # Link all necessary libraries
 target_link_libraries(unit_tests PRIVATE gtest_main)
 #target_link_libraries(unit_tests PRIVATE core_lib gtest_main)
