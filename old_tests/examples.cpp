@@ -13,14 +13,17 @@ TEST(Examples, CaliforniaHousingPrices) {
 
     // # Create layers.
 
-    Layer<double> l1 (50, 8, "glorot");
-    Layer<double> l2 (30, 50, "glorot");
-    Layer<double> l3 (20, 30, "glorot");
-    Layer<double> l4 (1, 20, "glorot");
+    ReLU_Layer<double> l1 (50, 8, "glorot");
+    ReLU_Layer<double> l2 (30, 50, "glorot");
+    ReLU_Layer<double> l3 (8, 30, "glorot");
+    Layer<double> l4 (1, 8, "glorot");
+
+    Layer<double> l_test (1, 8, "glorot");
 
     // # Create model and append layers.
     Model<double> model;
     model.appendLayer(l1);
+    //model.appendLayer(l4);
     model.appendLayer(l2);
     model.appendLayer(l3);
     model.appendLayer(l4);
@@ -30,26 +33,39 @@ TEST(Examples, CaliforniaHousingPrices) {
     std::tie(x_train, mean, deviation) = normalizeData<double>(x_train);
     x_test = normalizeData<double>(x_test, mean, deviation);
 
+
     // # Standardize y_train and y_test.
-    y_train = y_train * (0.00001);
-    y_test = y_test * (0.00001);
+    //y_train = y_train * (0.00001);
+    //y_test = y_test * (0.00001);
+    std::vector<double> mean_y, std_y;
+    std::tie(y_train, mean_y, std_y) = normalizeData<double>(y_train);
+    y_test = normalizeData<double>(y_test, mean_y, std_y);
+
 
     // # Train model.
-    model.train(x_train, y_train, 1000, 1.0E-10, 32);
+    model.train(x_train, y_train, 1000, 0.001, 64);
 
     // # Make prediction.
-    Matrix y_hat = model.pass(x_test.head());
+    Matrix y_hat = model.pass(x_test);
 
     // # Unstandardize Y data.
-    y_hat = y_hat * 100000;
-    y_train = y_train * 100000;
-    y_test = y_test * 100000;
+    //y_hat = y_hat * 100000;
+    //y_train = y_train * 100000;
+    //y_test = y_test * 100000;
 
     // # y_hat vs y_true.
     std::cout << "Y_hat:" << std::endl;
-    y_hat.basicPrint();
+    y_hat.head().basicPrint();
     std::cout << "Y_true:" << std::endl;
     y_test.head().basicPrint();
+
+    // # Error.
+    float error = 0;
+    for(int i = 0; i < y_hat.rows(); i++)
+        error += (y_test(i,0) - y_hat(i,0)) * (y_test(i,0) - y_hat(i,0));
+    error /= y_hat.rows();
+
+    std::cout << "Error:" << error << std::endl;
 }
 
 TEST(Examples, MNISTDigitRecognition) {
@@ -76,7 +92,7 @@ TEST(Examples, MNISTDigitRecognition) {
     model.appendLayer(hidden4);
 
     // # Train model.
-    model.train(x_train, y_train, 100, 1.0E-7);
+    model.train(x_train, y_train, 100, 1.0E-3);
 
     // # Make prediction.
     Matrix y_hat = model.pass(x_test.head());

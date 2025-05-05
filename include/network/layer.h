@@ -16,6 +16,7 @@ class Layer {
         Matrix<T> weights_;
         Matrix<T> biases_;
         Matrix<T> input_;
+        Matrix<T> output_;
         // # neurons_: amount of neurons in the layer, also rows of layer output.
         // # features_: amount of features in one input.
         int neurons_, features_; 
@@ -28,18 +29,21 @@ class Layer {
     
         // # Uses one of multiple initialisation functions.
         Layer(int n, int f, std::string init_func) : neurons_(n), features_(f), weights_(Matrix<T>(n,f,1)), biases_(Matrix<T>(1,n,0)) {
-            if(init_func == "glorot")
+            if(init_func == "glorot") {
+                T limit = sqrt(6.0f/(this->features_+this->neurons_));
                 for(int i = 0; i < n; i++)
                     for(int j = 0; j < f; j++) {
-                        T limit = sqrt(6.0f/(this->features_+this->neurons_));
                         this->weights_(i,j) = randomRange(-limit, limit); // # This obviously needs to change.   
                     }
+            }
         }
 
         // # Perform full pass.
         Matrix<T> pass(Matrix<T> x) {
-            input_ = x;
-            return calculate_activation(calculate_z(x));
+            this->input_ = x;
+            Matrix<T> z = calculate_z(x);
+            this->output_ = calculate_activation(z);
+            return this->output_;
         }   
         
         // # Calculate activation of layer. 
@@ -60,16 +64,15 @@ class Layer {
         }
 
         // # One iteration of backprop.
-        Matrix<T> backprop(Matrix<T> x, Matrix<T> dE, float learning_rate) {
-           
-            // # Forward pass.
-            Matrix<T> a = pass(x);
+        Matrix<T> backprop(Matrix<T> dE, float learning_rate) {
 
             // # It's linear so doesn't change.
             Matrix<T> dZ = this->dZ(dE);
 
             // # Loss gradient w.r.t. weights.
-            Matrix<T> dE_dw = dZ.transpose() * x;
+            Matrix<T> dE_dw = dZ.transpose() * this->input_;
+            //std::cout << "dE_dw (first 5 elems): ";
+            //dE_dw.head().basicPrint();
 
             // # Loss gradient w.r.t. bias.
             Matrix<T> dE_db = dZ;

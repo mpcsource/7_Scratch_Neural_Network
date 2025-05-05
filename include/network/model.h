@@ -47,41 +47,63 @@ class Model {
             return y_hat;
         }
 
+        Matrix<T> clip_gradients(Matrix<T> grads, T max_value) {
+            for (size_t i = 0; i < grads.rows(); i++) {
+                for (size_t j = 0; j < grads.cols(); j++) {
+                    if (grads(i, j) > max_value) {
+                        grads(i, j) = max_value;
+                    } else if (grads(i, j) < -max_value) {
+                        grads(i, j) = -max_value;
+                    }
+                }
+            }
+            return grads;
+        }        
+
         void train(Matrix<T> X, Matrix<T> Y, size_t iterations = 1000, float learning_rate = 0.0001f, int batches_size = 32) {
             assert(X.rows() == Y.rows());
 
             for(size_t iteration = 0; iteration < iterations; iteration++) {
-                std::cout << "Iteration number: " << iteration+1 << "/" << iterations << " " << ((float)(iteration+1)/(float)iterations)*100.0f << "%" << std::endl;
+                //std::cout << "Iteration number: " << iteration+1 << "/" << iterations << " " << ((float)(iteration+1)/(float)iterations)*100.0f << "%" << std::endl;
 
                 auto [batch_x, batch_y] = getBatchOfSize<T>(X, Y, batches_size);
                 int batch_size = batch_x.rows();
                 
 
                 for(size_t train_i = 0; train_i < batch_size; train_i++) {
+
+                    
+
                     //std::cout << "Epoch number: " << train_i+1 << "/" << batch_size << std::endl;
 
                     // # Get one sample.
                     Matrix<T> x = batch_x.getRow(train_i);
                     Matrix<T> y = batch_y.getRow(train_i);
 
-                    // # Forward pass & store activations.
-                    std::vector<Matrix<T>> activations;
-                    activations.push_back(x);
-
                     for(auto& layer : this->layers) {
                         x = layer->pass(x);
-                        activations.push_back(x);
                     }
 
-                    // # Compute initial gradient from loss.
-                    Matrix<T> a_last = activations.back();
-                    Matrix<T> dE_da = (a_last - y) * 2;
+                    Matrix<T> dE_da = (x - y) * 2;
+                    dE_da = clip_gradients(dE_da, 10.0f);
+
+                    float error = 0;
+                    for(int i = 0; i < x.rows(); i++)
+                        error += (y(i, 0) - x(i, 0)) * (y(i, 0) - x(i, 0));
+                    error /= x.rows(); 
+
+                    if(train_i % 10 == 0)
+                        std::cout << "Loss at epoch " << train_i+1 << ": " << error << std::endl;
+
 
                     // # Backwards pass.
                     Matrix<T> dE = dE_da;
                     for(int i = layers.size() - 1; i >= 0; i--) {
-                        Matrix<T> input = activations[i];
-                        dE = this->layers[i]->backprop(input, dE, learning_rate);
+
+                        
+
+
+                        dE = this->layers[i]->backprop(dE, learning_rate);
                     }
                 }
             }

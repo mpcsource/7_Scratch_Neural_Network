@@ -9,22 +9,26 @@
 #pragma once
 #include <vector>
 #include <type_traits>
-//#include <omp.h>
 
 
 template <
     // # Generic type name.
     typename T,
     // # Restrict type to numbers only.
-    typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type 
+    typename = std::enable_if_t<std::is_arithmetic<T>::value>
 >
 
 class Matrix {
     private:
         std::vector<T> data_;
         int rows_, cols_;
+        std::vector<T> grad_;
+        
 
     public:
+
+        Matrix() : rows_(0), cols_(0), data_() {}
+
         // # Constructor.
         Matrix(int r, int c, T fill = 0) : rows_(r), cols_(c), data_(r*c, fill) {}
 
