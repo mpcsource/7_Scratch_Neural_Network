@@ -13,99 +13,81 @@ template <
 
 class Model {
     private:
-        std::vector<Layer<T>*> layers;
+        std::vector<Layer<T>*> layers_;
+        std::string loss_;
+        Matrix<T> x_;
+        Matrix<T> out_;
 
     public:
-        Model() {}
+        Model(std::string loss) : loss_(loss) {}
 
-        void appendLayer(Layer<T>& layer) { 
-            this->layers.push_back(&layer); 
+        void appendLayer(Layer<T> * layer) {
+            this->layers_.push_back(layer);
         }
-        
-        Matrix<T> passOne(Matrix<T> x) {
-            for(Layer<T> * layer: this->layers) {
-                x = layer->pass(x);
+
+        Matrix<T> forward(Matrix<T> x) {
+            this->x_ = x;
+            for(Layer<T>* layer : this->layers_) {
+                layer->pass(x);
+                x = layer->a_;
             }
             return x;
         }
 
-        Matrix<T> pass(Matrix<T> x) {
-            size_t batch_size = x.rows();
-            size_t output_size = (this->layers.back())->weights().rows();
+        void backward(Matrix<T> label, float learning_rate = 0.01f) {
 
-            Matrix<T> y_hat (batch_size, output_size);
+            Layer<T> * out_layer = this->layers_.back();
+            Matrix<T> dloss = out_layer->a_.subtract(label);
+            Matrix<T> delta_o = dloss.multiply(out_layer->da_);
+            
+            out_layer->delta_z = delta_o;
+            out_layer->backward(learning_rate);
 
-            for(size_t i = 0; i < x.rows(); i++) {
-                Matrix x_ = x.getRow(i);
-                Matrix y_ = this->passOne(x_);
-                assert(y_hat.cols() == y_.cols());
-                for(size_t j = 0; j < y_.cols(); j++) {
-                    y_hat(i,j) = y_(0UL,j);
-                }
-            } 
+            for (int i = this->layers_.size() - 1; i > 0; i--) {
+                if(i == this->layers_.size()-1) continue; // Skip output layer
+                Layer<T> * next_layer = this->layers_.at(i+1);
+                Layer<T> * layer = this->layers_.at(i);
 
-            return y_hat;
-        }
+                auto delta_h = next_layer->weights().transpose().dot(next_layer->delta_z).multiply(layer->da_);
+                layer->delta_z = delta_h;
+                layer->backward(learning_rate);
 
-        Matrix<T> clip_gradients(Matrix<T> grads, T max_value) {
-            for (size_t i = 0; i < grads.rows(); i++) {
-                for (size_t j = 0; j < grads.cols(); j++) {
-                    if (grads(i, j) > max_value) {
-                        grads(i, j) = max_value;
-                    } else if (grads(i, j) < -max_value) {
-                        grads(i, j) = -max_value;
-                    }
-                }
-            }
-            return grads;
-        }        
-
-        void train(Matrix<T> X, Matrix<T> Y, size_t iterations = 1000, float learning_rate = 0.0001f, int batches_size = 32) {
-            assert(X.rows() == Y.rows());
-
-            for(size_t iteration = 0; iteration < iterations; iteration++) {
-                //std::cout << "Iteration number: " << iteration+1 << "/" << iterations << " " << ((float)(iteration+1)/(float)iterations)*100.0f << "%" << std::endl;
-
-                auto [batch_x, batch_y] = getBatchOfSize<T>(X, Y, batches_size);
-                int batch_size = batch_x.rows();
-                
-
-                for(size_t train_i = 0; train_i < batch_size; train_i++) {
-
-                    
-
-                    //std::cout << "Epoch number: " << train_i+1 << "/" << batch_size << std::endl;
-
-                    // # Get one sample.
-                    Matrix<T> x = batch_x.getRow(train_i);
-                    Matrix<T> y = batch_y.getRow(train_i);
-
-                    for(auto& layer : this->layers) {
-                        x = layer->pass(x);
-                    }
-
-                    Matrix<T> dE_da = (x - y) * 2;
-                    dE_da = clip_gradients(dE_da, 10.0f);
-
-                    float error = 0;
-                    for(int i = 0; i < x.rows(); i++)
-                        error += (y(i, 0) - x(i, 0)) * (y(i, 0) - x(i, 0));
-                    error /= x.rows(); 
-
-                    if(train_i % 10 == 0)
-                        std::cout << "Loss at epoch " << train_i+1 << ": " << error << std::endl;
-
-
-                    // # Backwards pass.
-                    Matrix<T> dE = dE_da;
-                    for(int i = layers.size() - 1; i >= 0; i--) {
-
-                        
-
-
-                        dE = this->layers[i]->backprop(dE, learning_rate);
-                    }
-                }
             }
         }
+
+        /**
+         * data - in full
+         * labels - one hot encoded 
+         * */
+        void backprop(Matrix<T> data, Matrix<T> labels, int epochs = 10, float learning_rate = 0.01f) {
+
+            int size = data.rows();
+            for (int epoch_i = 0; epoch_i < epochs; epoch_i++) { 
+                std::cout << "Epoch: " << epoch_i+1 << std::endl;  
+                for(int train_i = 0; train_i < size; train_i++) {
+                    auto image = data.getRow(train_i).transpose();
+                    auto label = labels.getRow(train_i).transpose();
+
+                    auto label_hat = this->forward(image);
+
+                    this->backward(label, learning_rate);
+                }
+            }
+         
+        }
+
+        Matrix<T> test(Matrix<T> data, Matrix<T> labels) {
+            Matrix<T> labels_hat (labels.rows(), labels.cols(), 0);
+            for(int test_i = 0; test_i < data.rows(); test_i++) {
+                auto image = data.getRow(test_i).transpose();
+                auto label = labels.getRow(test_i).transpose();
+
+                auto label_hat = this->forward(image);
+                for(int j = 0; j < labels.cols(); j++)
+                    labels_hat(test_i, j) = label_hat(0, j);
+            }
+            return labels_hat;
+        }
+
+        
 };

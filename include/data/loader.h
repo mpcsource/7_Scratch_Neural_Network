@@ -187,7 +187,10 @@ template <
     // # Restrict type to numbers only.
     typename = typename std::enable_if<std::is_arithmetic<T>::value, T>::type 
 >
-inline Matrix<T> unnormalizeData(Matrix<T> data, float mean, float standard) {
+inline Matrix<T> unnormalizeData(Matrix<T> data, std::vector<T> means, std::vector<T> stds) {
+    for(int i = 0; i < data.rows(); i++)
+        for(int j = 0; j < data.cols(); j++)
+            data(i, j) = data(i, j) * stds[j] + means[j];
     return data;
 }
 
