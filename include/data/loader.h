@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <fstream>
-#include "math/matrix.h"
+#include "math/matrix.hpp"
 #include <math.h>
 
 template <

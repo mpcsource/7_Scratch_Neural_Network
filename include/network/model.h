@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include "network/layer.h"
-#include "math/matrix.h"
+#include "math/matrix.hpp"
 
 template <
     // # Generic type name.

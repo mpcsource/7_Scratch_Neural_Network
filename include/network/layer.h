@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <math.h>
-#include "math/matrix.h"
+#include "math/matrix.hpp"
 #include "math/random.h"
 
 template <
