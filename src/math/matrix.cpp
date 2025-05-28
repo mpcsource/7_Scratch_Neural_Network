@@ -68,13 +68,10 @@ Matrix Matrix::multiply(float other) const {
 }
 
 Matrix Matrix::dot(const Matrix& other) const {
-    // Check this cols are equal to other's rows.
     assert(this->cols() == other.rows());
 
-    // Create output matrix.
     Matrix out(this->rows(), other.cols(), 0);
 
-    // Perform dot product.
     for (int i = 0; i < this->rows(); i++)
         for (int j = 0; j < other.cols(); j++) {
             float value = 0;
@@ -83,7 +80,6 @@ Matrix Matrix::dot(const Matrix& other) const {
             out(i, j) = value;
         }
 
-    // Return result.
     return out;
 }
 

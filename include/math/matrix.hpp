@@ -26,19 +26,12 @@ private:
 public:
     Matrix();
 
-    // # Constructor.
     Matrix(int r, int c, float fill = 0);
 
-    // # Constructor receiving data.
     Matrix(int r, int c, std::vector<float> data);
 
-    // # Get matrix rows or cols.
     int rows() const;
     int cols() const;
-
-    //
-    // Matrix mathematical operations.
-    //
 
     Matrix add(const Matrix& other) const;
 
@@ -50,23 +43,20 @@ public:
 
     Matrix dot(const Matrix& other) const;
 
-    // # Find transposed matrix.
     Matrix transpose() const;
 
     Matrix exponential() const;
 
     Matrix apply(std::function<float(float)> func) const;
 
-    // # Get n-th row.
     Matrix getRow(int row) const;
 
-    // # Basic print, should be updated later.
     void basicPrint() const;
 
-    // # Write access. [int parameters]
+    // Write access.
     float &operator()(int row, int col);
 
-    // # Read access. [for const's]
+    // Read access.
     const float &operator()(int row, int col) const;
 
     Matrix head() const;
