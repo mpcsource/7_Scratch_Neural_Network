@@ -21,8 +21,8 @@ TEST(NeuralNetwork, BasicTest) {
     y_test = normalizeData(y_test, mean_y, std_y);
 
     // Create 3 layers.
-    Layer l1 (8, 64, "sigmoid"); // Sigmoid activation by default.
-    Layer l2 (64, 64, "sigmoid"); // Sigmoid activation by default.
+    Layer l1 (8, 64); // Sigmoid activation by default.
+    Layer l2 (64, 64); // Sigmoid activation by default.
     Layer l3 (64, 1, "linear");
 
     // Create a model with Mean Squared Error loss.
