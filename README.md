@@ -1,40 +1,38 @@
-# 7_Scratch_Neural_Network
- 
-1. How to build the project:
-From ./:
-`cmake -S . -B build`
+# Scratch Neural Network
+A simple neural network library written in C++ for educational purposes. It provides basic functionality to create and train neural networks, including dense layers, activation functions, and backpropagation.
 
-2. How to run the project:
-`cmake --build build`
+## Building the project and running tests
+Simply run `make`. It will build the projects and run tests.<br>
+If you only want to build the project, run `make build`.
 
-3. How to run tests
-`ctest --test-dir build -V`
+## Version log
 
-* All at the same time:
-`clear && cmake -S . -B build && cmake --build build && ctest --test-dir build -V`
+### 0.1 (Current)
+* Functioning layers and dense model.
+* Mean squared error loss function.
+* Sigmoid and ReLU activation functions.
+* Glorot/He initialization.
+* Forward pass.
+* Batch gradient descent.
+* Loads and splits data.
+* Data normalization.
+* Basic matrix operations.
+* Pseudorandom number generator.
+* Basic testing.
+Provides a simple API for creating dense layers and neural networks, with backpropagation and forward pass functionality.
+Recommended to check the `tests` directory for examples of how to use the API.
 
-# Layer vs Model
-* Layers process one input at a time, models handle multiple, and they facilitate passing data from one layer to another.
 
-# Versions
-
-## Alpha 0.1 (Current)
-* A functioning dense-layered sequential linear neural network that can learn (backpropagation) and predict (forward pass).
-* Loads data, does matrix operations, has a pseudorandom number generator.
-* Has simple testing.
-
-## Alpha 0.2 (Planned)
-* Much better testing.
+### 0.2 (Planned)
+* Softmax activation function.
+* Cross-entropy loss function.
+* Mini-batch and stochastic gradient descent.
 * Extensive testing.
-* The academic/research paper.
-* All implemented, integrated together:
-    * Activation functions.
-    * Glorot initialization.
-    * Error/loss/cost functions.
-* Asserts in every method.
-* Batching/mini-batching.
+* A more complete research paper.
+* Additional checks and assertions.
 
-## Future
-* Visual recognition?
-* Rprop?
-* Adam
+#### 0.3 (Future)
+* Convolutional layers.
+* Adam optimizer.
+* L1 and L2 regularization.
+* Dropout layer.
