@@ -3,7 +3,7 @@
 #include "network/model.hpp"
 #include "data/loader.hpp"
 
-TEST(NeuralNetwork, ForwardAndBackprop) {
+TEST(NeuralNetwork, BasicTest) {
     // Load data from CSV file.
     Matrix data = loadData("../tests/data.csv", ',', true);
 
@@ -21,8 +21,8 @@ TEST(NeuralNetwork, ForwardAndBackprop) {
     y_test = normalizeData(y_test, mean_y, std_y);
 
     // Create 3 layers.
-    Layer l1 (8, 64); // Sigmoid activation by default.
-    Layer l2 (64, 64); // Sigmoid activation by default.
+    Layer l1 (8, 64, "sigmoid"); // Sigmoid activation by default.
+    Layer l2 (64, 64, "sigmoid"); // Sigmoid activation by default.
     Layer l3 (64, 1, "linear");
 
     // Create a model with Mean Squared Error loss.
@@ -33,7 +33,7 @@ TEST(NeuralNetwork, ForwardAndBackprop) {
     model.appendLayer(&l3);
 
     // Backpropagate the model.
-    model.backprop(x_train, y_train, 30, 0.1f);
+    model.backprop(x_train, y_train, 30, 0.001f);
 
     // Unnormalize the data for testing.
     y_test = unnormalizeData(y_test, mean_y, std_y);
