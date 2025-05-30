@@ -20,10 +20,6 @@ class Model {
 
         void backward(Matrix label, float learning_rate = 0.01f);
 
-        /**
-         * data - in full
-         * labels - one hot encoded 
-         * */
         void backprop(Matrix data, Matrix labels, int epochs = 10, float learning_rate = 0.01f);
 
         Matrix test(Matrix data, Matrix labels);
