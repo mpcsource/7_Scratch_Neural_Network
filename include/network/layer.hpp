@@ -21,21 +21,22 @@ public:
 
     Layer(int nin, int nout, std::string activation = "sigmoid");
 
-    // # Perform full pass.
+    // Perform full pass.
     void pass(Matrix x);
     
-    // # One iteration of backprop.
+    // One iteration of backprop.
     void backward(float learning_rate);
 
-    // # Access weights.
+    // Write weights.
     Matrix &weights();
 
+    // Read weights.
     const Matrix &weights() const;
 
-    // # Access biases.
+    // Access biases.
     Matrix &biases();
     const Matrix &biases() const;
 
-    // # Print weights and biases.
+    // Print weights and biases.
     void debugPrint();
 };

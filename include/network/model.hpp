@@ -22,7 +22,5 @@ class Model {
 
         void backprop(Matrix data, Matrix labels, int epochs = 10, float learning_rate = 0.01f);
 
-        Matrix test(Matrix data, Matrix labels);
-
-        
+        Matrix test(Matrix data, Matrix labels);    
 };
