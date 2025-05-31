@@ -57,6 +57,32 @@ void Layer::pass(Matrix x)
         this->a_ = this->z_.apply(relu);
         this->da_ = this->z_.apply(relu_deriv);
     }
+    else if (this->activation_ == "softmax")
+    {
+
+        // Calculate sum of exponentials for softmax.
+        float sum = 0.0f;
+        for(int i = 0; i < this->z_.rows(); i++)
+        {
+            sum += std::exp(this->z_(i, 0));
+        }
+
+        // Softmax function: a_i = exp(z_i) / sum(exp(z_j))
+        // where j iterates over all elements in the row.
+        this->a_ = this->z_;
+        for(int i = 0; i < this->a_.rows(); i++)
+        {
+            this->a_(i, 0) = std::exp(this->z_(i, 0)) / sum;
+        }
+
+        // Softmax derivative function: da_i = a_i * (1 - a_i)
+        this->da_ = this->a_;
+        for(int i = 0; i < this->da_.rows(); i++)
+        {
+            this->da_(i, 0) = this->a_(i, 0) * (1.0 - this->a_(i, 0));
+        }
+    }
+
     else // Linear by default.
     {
         this->a_ = this->z_;
