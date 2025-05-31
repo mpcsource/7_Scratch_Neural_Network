@@ -22,8 +22,17 @@ void Model::backward(Matrix label, float learning_rate)
 {
 
     Layer *out_layer = this->layers_.back();
-    Matrix dloss = out_layer->a_.subtract(label);
-    Matrix delta_o = dloss.multiply(out_layer->da_);
+    
+    Matrix dloss, delta_o;
+    // Handle different loss functions.
+    if(this->loss_ == "cross_entropy") {
+        dloss = out_layer->a_.subtract(label);
+        delta_o = dloss;
+    }
+    else { // Default to MSE.
+        dloss = out_layer->a_.subtract(label);
+        delta_o = dloss.multiply(out_layer->da_);
+    }
 
     out_layer->delta_z = delta_o;
     out_layer->backward(learning_rate);
