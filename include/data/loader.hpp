@@ -4,6 +4,7 @@
 #include <sstream>
 #include "math/matrix.hpp"
 #include <math.h>
+#include <set>
 
 
 Matrix loadData(const std::string& path, char separator, bool header, bool limitRows = false, int limitRowsAmount = 10000);
@@ -21,3 +22,9 @@ std::tuple<Matrix, std::vector<float>, std::vector<float>> normalizeData(Matrix 
 Matrix unnormalizeData(Matrix data, std::vector<float> means, std::vector<float> stds);
 
 std::tuple<Matrix, Matrix> getBatchOfSize(Matrix X, Matrix Y, int batch_size = 32);
+
+// Assumes data is a single column matrix.
+Matrix oneHotEncode(Matrix data);
+
+// Assumes each row is an entry.
+Matrix argMax(Matrix data);

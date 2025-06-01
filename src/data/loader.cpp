@@ -57,8 +57,10 @@ Matrix loadData(const std::string& path, char separator, bool header, bool limit
 std::tuple<Matrix, Matrix, Matrix, Matrix> trainTestSplit(Matrix data, int y_col) {
 
     // # Shuffle data.
-    for(int i = 0; i < data.rows(); i++) {
-        int j = (rand() % data.cols()) + 1;
+    /*for(int i = 0; i < data.rows(); i++) {
+        int j = (rand() % data.rows());
+
+        if(i == j) continue;
 
         Matrix a_i = data.getRow(i);
         Matrix a_j = data.getRow(j);
@@ -68,6 +70,21 @@ std::tuple<Matrix, Matrix, Matrix, Matrix> trainTestSplit(Matrix data, int y_col
             data(i, k) = a_j(0, k);
         for(int k = 0; k < a_i.cols(); k++)
             data(j, k) = a_i(0, k);
+    }
+    */
+    for(int i = data.rows() -1; i > 0; i--) {
+        int j = rand() % (i + 1);
+
+        if(i == j) continue;
+
+        auto row_i = data.getRow(i);
+        auto row_j = data.getRow(j);
+
+        // # Swap rows i and j.
+        for(int k = 0; k < data.cols(); k++) {
+            data(i, k) = row_j(0, k);
+            data(j, k) = row_i(0, k);
+        }
     }
 
     size_t const half_size = data.rows() % 2;
@@ -176,4 +193,48 @@ std::tuple<Matrix, Matrix> getBatchOfSize(Matrix X, Matrix Y, int batch_size) {
     }
 
     return {batch_x, batch_y};
+}
+
+Matrix oneHotEncode(Matrix data) {
+    // Assure it's a single column matrix.
+    if(data.cols() != 1)
+        throw std::invalid_argument("Data must be a single column matrix for one-hot encoding.");
+
+    // Get unique values in the column.
+    std::set<float> unique_values;
+    for(int i = 0; i < data.rows(); i++) {
+        unique_values.insert(data(i, 0));
+    }
+
+    Matrix encoded_data(data.rows(), unique_values.size(), 0);
+    for(int i = 0; i < data.rows(); i++) {
+        auto it = unique_values.find(data(i, 0));
+        if(it != unique_values.end()) {
+            int index = std::distance(unique_values.begin(), it);
+            encoded_data(i, index) = 1.0f; // Set the corresponding column to 1.
+        }
+    }
+
+    return encoded_data;
+}
+
+Matrix argMax(Matrix data) {
+
+    Matrix result(data.rows(), 1, 0);
+
+    for(int i = 0; i < data.rows(); i++) {
+        float max_value = data(i, 0);
+        int max_index = 0;
+
+        for(int j = 1; j < data.cols(); j++) {
+            if(data(i, j) > max_value) {
+                max_value = data(i, j);
+                max_index = j;
+            }
+        }
+
+        result(i, 0) = max_index; // Store the column index of the maximum value for each row in the result matrix.
+    }
+    
+    return result;
 }
