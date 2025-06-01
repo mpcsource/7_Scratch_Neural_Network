@@ -11,7 +11,7 @@ build:
 
 # Run tests using CTest
 test:
-	ctest --test-dir build -V
+	ctest --test-dir build -V -R $(TEST)
 
 # Clean the build directory
 clean:
