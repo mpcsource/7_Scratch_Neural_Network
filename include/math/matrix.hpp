@@ -1,9 +1,9 @@
 /**
- * File: matrix.h
+ * File: matrix.hpp
  * Author: Miguel Certã
  * Date: 17/4/2025
  * Description: This file is the header and contains the definitions for the Matrix class.
- * Dependencies: vector, type_traits
+ * Dependencies: [TO ADD]
  */
 
 #pragma once
@@ -19,39 +19,46 @@
 class Matrix
 {
 private:
-    std::vector<float> data_;
-    std::vector<float> grad_;
-    int rows_, cols_;
+    std::vector<float> data_; // Internal data
+    std::vector<float> grad_; // Self gradient
+    int rows_, cols_; // Amount of rows and columns
 
 public:
-    Matrix();
 
-    Matrix(int r, int c, float fill = 0);
+    // ============
+    // Constructors
+    // ============
 
-    Matrix(int r, int c, std::vector<float> data);
+    Matrix(); // Empty constructor
+    Matrix(int r, int c, float fill = 0); // Fill constructor
+    Matrix(int r, int c, std::vector<float> data); // Array constructor
 
-    int rows() const;
-    int cols() const;
+    int rows() const; // Row amt getter
+    int cols() const; // Col amt getter
 
-    Matrix add(const Matrix& other) const;
+    // ===============
+    // Math operations
+    // ===============
 
-    Matrix subtract(const Matrix& other) const;
+    Matrix add(const Matrix& other) const; // Add two matrices
 
-    Matrix multiply(const Matrix& other) const;
+    Matrix subtract(const Matrix& other) const; // Subtract two matrices
 
-    Matrix multiply(float other) const;
+    Matrix multiply(const Matrix& other) const; // Element-wise multiplication
 
-    Matrix dot(const Matrix& other) const;
+    Matrix multiply(float other) const; // Element-wise multiplication with float
 
-    Matrix transpose() const;
+    Matrix dot(const Matrix& other) const; // Dot product
 
-    Matrix exponential() const;
+    Matrix transpose() const; // Transpose self
 
-    Matrix apply(std::function<float(float)> func) const;
+    Matrix exponential() const; // Don't remember
 
-    Matrix getRow(int row) const;
+    Matrix apply(std::function<float(float)> func) const; // Apply function to this matrix
 
-    void basicPrint() const;
+    Matrix getRow(int row) const; // Extract row from self
+
+    void basicPrint() const; // Debug print
 
     // Write access.
     float &operator()(int row, int col);
