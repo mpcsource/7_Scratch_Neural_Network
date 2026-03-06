@@ -1,3 +1,3 @@
-import scratchneuralnetwork
+import scratchneuralnetwork as snn
 
 print("hi")
