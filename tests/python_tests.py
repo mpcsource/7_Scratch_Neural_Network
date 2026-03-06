@@ -1,4 +1,24 @@
 import scratchneuralnetwork as snn
+import math
+
+def mae(true, pred, n):
+    total = 0
+    for i in range(n):
+        total += abs(true[i, 0] - pred[i, 0])
+    return total / n
+
+def rmse(true, pred, n):
+    total = 0
+    for i in range(n):
+        diff = true[i, 0] - pred[i, 0]
+        total += diff * diff
+    return math.sqrt(total / n)
+
+def r2(true, pred, n):
+    mean = sum(true[i, 0] for i in range(n)) / n
+    ss_tot = sum((true[i, 0] - mean) ** 2 for i in range(n))
+    ss_res = sum((true[i, 0] - pred[i, 0]) ** 2 for i in range(n))
+    return 1 - (ss_res / ss_tot)
 
 # Load data from CSV file.
 data = snn.load_data("tests/data.csv", ",", True)
@@ -26,7 +46,7 @@ model.append_layer(l2)
 model.append_layer(l3)
 
 # Backpropagate the model.
-model.backprop(x_train, y_train, 30, 0.001)
+model.backprop(x_train, y_train, 100, 0.01, 32)
 
 # Unnormalize.
 y_test = snn.unnormalize_data(y_test, mean_y, std_y)
@@ -40,3 +60,9 @@ print("Pred:")
 y_hat = model.test(x_test, y_test)
 y_hat = snn.unnormalize_data(y_hat, mean_y, std_y)
 y_hat.tail().print()
+
+# Metrics
+n = y_test.rows
+print(f"\nMAE:  {mae(y_test, y_hat, n):.2f}")
+print(f"RMSE: {rmse(y_test, y_hat, n):.2f}")
+print(f"R²:   {r2(y_test, y_hat, n):.4f}")

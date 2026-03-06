@@ -344,6 +344,27 @@ Matrix Matrix::apply(std::function<float(float)> func) const {
     return out;
 }
 
+Matrix Matrix::addBias(const Matrix& bias) const {
+    toHost();
+    assert(this->rows() == bias.rows());
+    assert(bias.cols() == 1);
+
+    Matrix out(this->rows(), this->cols(), 0);
+    for (int i = 0; i < this->rows(); i++)
+        for (int j = 0; j < this->cols(); j++)
+            out(i, j) = (*this)(i, j) + bias(i, 0);
+    return out;
+}
+
+Matrix Matrix::sumCols() const {
+    toHost();
+    Matrix out(this->rows(), 1, 0);
+    for (int i = 0; i < this->rows(); i++)
+        for (int j = 0; j < this->cols(); j++)
+            out(i, 0) += (*this)(i, j);
+    return out;
+}
+
 Matrix Matrix::getRow(int row) const {
     toHost();
     Matrix result(1, this->cols_, 0);

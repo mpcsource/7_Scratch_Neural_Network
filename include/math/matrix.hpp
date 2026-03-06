@@ -72,6 +72,10 @@ public:
 
     Matrix apply(std::function<float(float)> func) const; // Apply function to this matrix
 
+    Matrix addBias(const Matrix& bias) const; // Add nout×1 bias to each column of nout×N matrix
+
+    Matrix sumCols() const; // Sum across columns, returns rows×1 matrix
+
     Matrix getRow(int row) const; // Extract row from self
 
     void basicPrint() const; // Debug print

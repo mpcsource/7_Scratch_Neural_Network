@@ -18,12 +18,13 @@ Matrix Model::forward(Matrix x)
     return x;
 }
 
-void Model::backward(Matrix label, float learning_rate)
+void Model::backward(Matrix label, float learning_rate, int batch_size)
 {
 
     Layer *out_layer = this->layers_.back();
     Matrix dloss = out_layer->a_.subtract(label);
     Matrix delta_o = dloss.multiply(out_layer->da_);
+    delta_o = delta_o.multiply(1.0f / batch_size);
 
     out_layer->delta_z = delta_o;
     out_layer->backward(learning_rate);
@@ -41,9 +42,9 @@ void Model::backward(Matrix label, float learning_rate)
     }
 }
 
-void Model::backprop(Matrix data, Matrix labels, int epochs, float learning_rate)
+void Model::backprop(Matrix data, Matrix labels, int epochs, float learning_rate, int batch_size)
 {
-
+    /*
     int size = data.rows();
     for (int epoch_i = 0; epoch_i < epochs; epoch_i++)
     {
@@ -56,6 +57,18 @@ void Model::backprop(Matrix data, Matrix labels, int epochs, float learning_rate
             auto label_hat = this->forward(image);
 
             this->backward(label, learning_rate);
+        }
+    }*/
+
+    for (int epoch_i = 0; epoch_i < epochs; epoch_i++) {
+        std::cout << "Epoch: " << epoch_i + 1 << std::endl;
+
+        int steps = data.rows() / batch_size;
+        for (int step = 0; step < steps; step++) {
+            auto [batch_x, batch_y] = getBatchOfSize(data, labels, batch_size);
+
+            auto label_hat = this->forward(batch_x.transpose());
+            this->backward(batch_y.transpose(), learning_rate, batch_size);
         }
     }
 }

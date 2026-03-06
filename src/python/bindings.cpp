@@ -59,6 +59,15 @@ PYBIND11_MODULE(scratchneuralnetwork, m) {
             py::arg("fill")
         ) 
 
+        // Getter
+        .def_property_readonly("rows",
+            &Matrix::rows
+        )
+
+        .def_property_readonly("cols",
+            &Matrix::cols
+        )
+
         // ===============
         // Math operations
         // ===============
@@ -105,6 +114,16 @@ PYBIND11_MODULE(scratchneuralnetwork, m) {
 
         .def("head", &Matrix::head, py::return_value_policy::reference)
         .def("tail", &Matrix::tail, py::return_value_policy::reference)
+
+        // Element access: matrix[row, col]
+        .def("__getitem__", [](const Matrix &m, std::tuple<int, int> idx) {
+            return m(std::get<0>(idx), std::get<1>(idx));
+        })
+
+        // Element write: matrix[row, col] = value
+        .def("__setitem__", [](Matrix &m, std::tuple<int, int> idx, float val) {
+            m(std::get<0>(idx), std::get<1>(idx)) = val;
+        })
     ;
 
     // layer.hpp

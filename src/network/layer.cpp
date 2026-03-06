@@ -24,7 +24,7 @@ Layer::Layer(int nin, int nout, std::string activation) : weights_(Matrix(nout, 
 void Layer::pass(Matrix x)
 {
     this->x_ = x;
-    this->z_ = this->weights_.dot(x).add(this->biases_);
+    this->z_ = this->weights_.dot(x).addBias(this->biases_);
 
     if (this->activation_ == "sigmoid")
     {
@@ -68,7 +68,7 @@ void Layer::backward(float learning_rate)
 {
 
     Matrix grad_w = this->delta_z.dot(this->x_.transpose());
-    Matrix grad_b = this->delta_z;
+    Matrix grad_b = this->delta_z.sumCols();
 
     this->weights_ = this->weights_.subtract(grad_w.multiply(learning_rate));
     this->biases_ = this->biases_.subtract(grad_b.multiply(learning_rate));
