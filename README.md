@@ -10,6 +10,12 @@ If you only want to build the project, run `make build`.
 - Add CUDA stuff
 - Store weights (Save and load models)
 
+# Roadmap
+- Improve Makefiles and Integration with VSCode Tasks (Pressing F5 gives multiple options, running Python tests, running C++ tests, building, cleaning build, etc...)
+- Work on simple Python bindings
+- Cleaner code
+- Integrate CUDA
+
 # Structure
 data/ - Load data
 math/ - Matrix operations, should include CUDA support
