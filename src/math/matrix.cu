@@ -1,22 +1,124 @@
 #include "math/matrix.hpp"
-
 #include "backend/backend.hpp"
+
 #ifdef USE_CUDA
 #include "matrix_gpu.cu"
 #endif
 
-Matrix::Matrix() : rows_(0), cols_(0), data_() {}
+// ============
+// Constructors
+// ============
 
-Matrix::Matrix(int r, int c, float fill) : rows_(r), cols_(c), data_(r * c, fill) {}
+// Empty constructor
+Matrix::Matrix() : rows_(0), cols_(0), h_data() {}
 
-Matrix::Matrix(int r, int c, std::vector<float> data) : rows_(r), cols_(c), data_(std::move(data)) {}
+// Fill constructor
+Matrix::Matrix(int r, int c, float fill) : rows_(r), cols_(c), h_data(r * c, fill) {
+#ifdef USE_CUDA
+    if(get_backend() == Backend::CUDA) {
+        cudaMalloc(&d_data, r * c * sizeof(float));
+        toDevice();
+    }
+#endif
+}
 
+// Array constructor
+Matrix::Matrix(int r, int c, std::vector<float> data) : rows_(r), cols_(c), h_data(std::move(data)) {
+#ifdef USE_CUDA
+    if(get_backend() == Backend::CUDA) {
+        cudaMalloc(&d_data, r * c * sizeof(float));
+        toDevice();
+    }
+#endif
+}
+
+// Copy constructor
+Matrix::Matrix(const Matrix& other) : rows_(other.rows_), cols_(other.cols_), h_data(other.h_data) {
+#ifdef USE_CUDA
+    if (get_backend() == Backend::CUDA) {
+        cudaMalloc(&d_data, rows_ * cols_ * sizeof(float));
+        toDevice();
+    }
+#endif
+}
+
+// Copy assignment operator
+Matrix& Matrix::operator=(const Matrix& other) {
+    if (this == &other) return *this;
+
+    rows_ = other.rows_;
+    cols_ = other.cols_;
+    h_data = other.h_data;
+
+#ifdef USE_CUDA
+    if (d_data != nullptr) {
+        cudaFree(d_data);
+        d_data = nullptr; 
+    }
+    if (get_backend() == Backend::CUDA) {
+        cudaMalloc(&d_data, rows_ * cols_ * sizeof(float));
+        toDevice();
+    }
+#endif
+
+    return *this;
+}
+
+// Destructor
+Matrix::~Matrix() {
+#ifdef USE_CUDA
+    if (d_data != nullptr) {
+        cudaFree(d_data);
+        d_data = nullptr;
+    }
+#endif
+}
+
+// Row amt getter
 int Matrix::rows() const {
     return this->rows_;
 }
 
+// Col amt getter
 int Matrix::cols() const {
     return this->cols_;
+}
+
+// Copy data from host to device
+void Matrix::toDevice() const {
+    if(get_backend() == Backend::CUDA && d_data != nullptr) {
+        cudaMemcpy(
+            d_data,
+            h_data.data(),
+            rows_ * cols_ * sizeof(float),
+            cudaMemcpyHostToDevice
+        );
+    }
+};
+
+// Copy data from device to host
+void Matrix::toHost() const {
+    if(get_backend() == Backend::CUDA && d_data != nullptr) {
+        cudaMemcpy(
+            const_cast<float*>(h_data.data()),
+            d_data,
+            rows_ * cols_ * sizeof(float),
+            cudaMemcpyDeviceToHost
+        );
+    }
+};
+
+__global__ void matrix_add_kernel(
+    const float* A,
+    const float* B,
+    float* C,
+    int size
+) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(idx < size) {
+        C[idx] = A[idx] + B[idx];
+    }
 }
 
 Matrix Matrix::add(const Matrix& other) const {
@@ -27,15 +129,27 @@ Matrix Matrix::add(const Matrix& other) const {
 
 #ifdef USE_CUDA
 
-    // CUDA-based implementation
+    // Use CUDA-based implementation if allowed and possible
     if (get_backend() == Backend::CUDA) {
 
         // Right now it's CPU because CUDA isn't implemented yet
-        for (int i = 0; i < this->rows(); i++) {
-            for (int j = 0; j < this->cols(); j++) {
-                    out(i, j) = (*this)(i, j) + (other)(i, j);
-            }
-        }
+        //for (int i = 0; i < this->rows(); i++) {
+        //    for (int j = 0; j < this->cols(); j++) {
+        //            out(i, j) = (*this)(i, j) + (other)(i, j);
+        //    }
+        //}
+    
+        this->toDevice();
+        other.toDevice();
+
+        int threads = 256;
+        int size = this->rows() * this->cols();
+        int blocks = (size + threads - 1) / threads;
+
+        matrix_add_kernel<<<blocks, threads>>>(this->d_data, other.d_data, out.d_data, size);
+
+        cudaDeviceSynchronize();
+        out.toHost();
 
         return out;
     }
@@ -149,11 +263,11 @@ void Matrix::basicPrint() const {
 }
 
 float &Matrix::operator()(int row, int col){
-    return this->data_[row * this->cols_ + col];
+    return this->h_data[row * this->cols_ + col];
 }
 
 const float &Matrix::operator()(int row, int col) const {
-    return this->data_[row * this->cols_ + col];
+    return this->h_data[row * this->cols_ + col];
 }
 
 Matrix Matrix::head() const {

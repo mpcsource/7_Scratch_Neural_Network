@@ -22,8 +22,8 @@ private:
     int rows_, cols_; // Amount of rows and columns
 
     // CPU
-    std::vector<float> data_; // Internal data
-    std::vector<float> grad_; // Self gradient
+    std::vector<float> h_data; // Internal data
+    std::vector<float> h_grad; // Self gradient
 
     // GPU
     float* d_data = nullptr;
@@ -38,9 +38,16 @@ public:
     Matrix(); // Empty constructor
     Matrix(int r, int c, float fill = 0); // Fill constructor
     Matrix(int r, int c, std::vector<float> data); // Array constructor
+    Matrix(const Matrix& other); // Copy constructor
+    Matrix& operator=(const Matrix& other); // Copy assignment operator
+
+    ~Matrix();
 
     int rows() const; // Row amt getter
     int cols() const; // Col amt getter
+
+    void toDevice() const;
+    void toHost() const;
 
     // ===============
     // Math operations
@@ -65,6 +72,8 @@ public:
     Matrix getRow(int row) const; // Extract row from self
 
     void basicPrint() const; // Debug print
+
+
 
     // Write access.
     float &operator()(int row, int col);
