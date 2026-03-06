@@ -5,6 +5,17 @@ A simple neural network library written in C++ for educational purposes. It prov
 Simply run `make`. It will build the projects and run tests.<br>
 If you only want to build the project, run `make build`.
 
+# Todo
+- Add Python bindings
+- Add CUDA stuff
+- Store weights (Save and load models)
+
+# Structure
+data/ - Load data
+math/ - Matrix operations, should include CUDA support
+network/ - FNN classes
+python/ - Python bindings
+
 ## Version log
 
 ### 0.1 (Current)
