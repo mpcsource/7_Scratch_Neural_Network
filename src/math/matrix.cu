@@ -79,6 +79,8 @@ Matrix& Matrix::operator=(const Matrix& other) {
     }
     if (get_backend() == Backend::CUDA) {
         cudaMalloc(&d_data, rows_ * cols_ * sizeof(float));
+        gpu_dirty = true;
+        cpu_dirty = false;
         toDevice();
     }
 #endif

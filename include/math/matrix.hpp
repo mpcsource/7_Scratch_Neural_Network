@@ -28,8 +28,8 @@ private:
     // GPU
     float* d_data = nullptr;
     float* d_grad = nullptr;
-    mutable bool cpu_dirty = false;
-    mutable bool gpu_dirty = false;
+    mutable bool cpu_dirty = false; // d_data is newer than h_data
+    mutable bool gpu_dirty = true;  // h_data is newer than d_data (always true on construction)
 
 public:
 
