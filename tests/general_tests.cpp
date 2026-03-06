@@ -41,9 +41,9 @@ TEST(NeuralNetwork, BasicTest) {
 
     // Print the results.
     std::cout << "True:" << std::endl;
-    y_test.head().basicPrint();
+    y_test.tail().basicPrint();
     std::cout << "Pred:" << std::endl;
     auto y_hat = model.test(x_test, y_test);
     y_hat = unnormalizeData(y_hat, mean_y, std_y);
-    y_hat.head().basicPrint();
+    y_hat.tail().basicPrint();
 }

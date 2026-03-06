@@ -4,6 +4,15 @@ project(ScratchNeuralNetwork)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Cuda (must be before any targets are defined)
+find_package(CUDAToolkit)
+if(CUDAToolkit_FOUND)
+    set(CMAKE_CUDA_COMPILER ${CUDAToolkit_BIN_DIR}/nvcc)
+    enable_language(CUDA)
+    add_definitions(-DUSE_CUDA)
+    set(CMAKE_CUDA_ARCHITECTURES 86)
+endif()
+
 # Include GoogleTest
 include(FetchContent)
 FetchContent_Declare(
@@ -44,6 +53,13 @@ target_link_libraries(unit_tests PUBLIC OpenMP::OpenMP_CXX)
 # Link all necessary libraries
 target_link_libraries(unit_tests PRIVATE gtest_main)
 target_link_libraries(unit_tests PRIVATE core_lib gtest_main)
+
+if(CUDAToolkit_FOUND)
+    file(GLOB_RECURSE CUDA_FILES src/**/*.cu)
+    target_sources(core_lib PRIVATE ${CUDA_FILES})
+    set_target_properties(core_lib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    target_link_libraries(core_lib PRIVATE CUDA::cudart)
+endif()
 
 # Register with CTest
 include(GoogleTest)

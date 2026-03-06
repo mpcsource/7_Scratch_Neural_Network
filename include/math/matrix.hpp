@@ -19,9 +19,15 @@
 class Matrix
 {
 private:
+    int rows_, cols_; // Amount of rows and columns
+
+    // CPU
     std::vector<float> data_; // Internal data
     std::vector<float> grad_; // Self gradient
-    int rows_, cols_; // Amount of rows and columns
+
+    // GPU
+    float* d_data = nullptr;
+    float* d_grad = nullptr;
 
 public:
 

@@ -1,9 +1,48 @@
 #include "python/bindings.hpp"
 
+
+
 namespace py = pybind11;
 
 PYBIND11_MODULE(scratchneuralnetwork, m) {
+    initialize_backend(); // Initialize CUDA if possible
+
     m.doc() = "Add something here.";
+
+    // loader.hpp
+    m.def("load_data", &loadData,
+        py::arg("path"),
+        py::arg("separator"),
+        py::arg("header"),
+        py::arg("limit_rows") = false,
+        py::arg("limit_rows_amount") = 10000,
+        py::return_value_policy::reference
+    );
+
+    m.def("train_test_split", &trainTestSplit,
+        py::arg("data"),
+        py::arg("y_col"),
+        py::return_value_policy::reference
+    );
+
+    m.def("normalize_data", static_cast<Matrix (*)(Matrix, std::vector<float>, std::vector<float>)>(&normalizeData),
+        py::arg("data"),
+        py::arg("means"),
+        py::arg("stds"),
+        py::return_value_policy::reference
+    );
+
+    m.def("normalize_data", static_cast<std::tuple<Matrix, std::vector<float>, std::vector<float>> (*)(Matrix)>(&normalizeData),
+        py::arg("data"),
+        py::return_value_policy::reference
+    );
+
+    m.def("unnormalize_data", &unnormalizeData,
+        py::arg("data"),
+        py::arg("means"),
+        py::arg("stds"),
+        py::return_value_policy::reference
+    );
 
     // matrix.hpp
     py::class_<Matrix>(m, "Matrix")
@@ -13,7 +52,12 @@ PYBIND11_MODULE(scratchneuralnetwork, m) {
         // ============
 
         .def(py::init<>()) // Empty constructor
-        .def(py::init<int, int, float>()) // Fill constructor
+    
+        .def(py::init<int, int, float>(), // Fill constructor
+            py::arg("rows"),
+            py::arg("columns"),
+            py::arg("fill")
+        ) 
 
         // ===============
         // Math operations
@@ -58,6 +102,40 @@ PYBIND11_MODULE(scratchneuralnetwork, m) {
         // Debug printing
         //.def("__str__", &Matrix::basicPrint)
         .def("print", &Matrix::basicPrint)
+
+        .def("head", &Matrix::head, py::return_value_policy::reference)
+        .def("tail", &Matrix::tail, py::return_value_policy::reference)
+    ;
+
+    // layer.hpp
+    py::class_<Layer>(m, "Layer")
+        
+        // ============
+        // Constructors
+        // ============
+
+        .def(py::init<int, int, std::string>(),
+            py::arg("in"),
+            py::arg("out"),
+            py::arg("activation") = "sigmoid"
+        )
+    ;
+
+    // model.hpp
+    py::class_<Model>(m, "Model")
+    
+        // ============
+        // Constructors
+        // ============
+
+        .def(py::init<std::string>(),
+            py::arg("loss")
+        )
+
+        .def("append_layer", &Model::appendLayer)
+        .def("backprop", &Model::backprop)
+        .def("test", &Model::test)
+
     ;
 }
 

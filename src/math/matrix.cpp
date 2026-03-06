@@ -1,5 +1,9 @@
 #include "math/matrix.hpp"
 
+#include "backend/backend.hpp"
+#ifdef USE_CUDA
+#include "matrix_gpu.cu"
+#endif
 
 Matrix::Matrix() : rows_(0), cols_(0), data_() {}
 
@@ -21,9 +25,28 @@ Matrix Matrix::add(const Matrix& other) const {
 
     Matrix out(this->rows(), this->cols(), 0);
 
-    for (int i = 0; i < this->rows(); i++)
-        for (int j = 0; j < this->cols(); j++)
-            out(i, j) = (*this)(i, j) + other(i, j);
+#ifdef USE_CUDA
+
+    // CUDA-based implementation
+    if (get_backend() == Backend::CUDA) {
+
+        // Right now it's CPU because CUDA isn't implemented yet
+        for (int i = 0; i < this->rows(); i++) {
+            for (int j = 0; j < this->cols(); j++) {
+                    out(i, j) = (*this)(i, j) + (other)(i, j);
+            }
+        }
+
+        return out;
+    }
+#endif
+
+    // Fallback CPU Implementation
+    for (int i = 0; i < this->rows(); i++) {
+        for (int j = 0; j < this->cols(); j++) {
+                out(i, j) = (*this)(i, j) + (other)(i, j);
+        }
+    }
 
     return out;
 }
