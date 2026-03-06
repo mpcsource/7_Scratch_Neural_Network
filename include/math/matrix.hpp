@@ -28,6 +28,8 @@ private:
     // GPU
     float* d_data = nullptr;
     float* d_grad = nullptr;
+    mutable bool cpu_dirty = false;
+    mutable bool gpu_dirty = false;
 
 public:
 
@@ -39,6 +41,7 @@ public:
     Matrix(int r, int c, float fill = 0); // Fill constructor
     Matrix(int r, int c, std::vector<float> data); // Array constructor
     Matrix(const Matrix& other); // Copy constructor
+    Matrix(Matrix&& other) noexcept; // Move constructor
     Matrix& operator=(const Matrix& other); // Copy assignment operator
 
     ~Matrix();
