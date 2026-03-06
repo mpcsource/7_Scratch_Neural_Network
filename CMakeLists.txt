@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(ScratchNeuralNetwork)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Include GoogleTest
 include(FetchContent)
@@ -28,6 +29,7 @@ file(GLOB_RECURSE TEST_FILES tests/*.cpp)
 
 # Optionally split utils into their own libraries if needed, but you can also just use object libraries or combine all into one
 add_library(core_lib ${SOURCE_FILES})
+set_target_properties(core_lib PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # pybind11
 pybind11_add_module(scratchneuralnetwork src/python/bindings.cpp)
