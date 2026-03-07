@@ -44,6 +44,12 @@ PYBIND11_MODULE(scratchneuralnetwork, m) {
         py::return_value_policy::move
     );
 
+    m.def("inspect_data", &inspectData,
+        py::arg("path"),
+        py::arg("separator"),
+        py::arg("header")
+    );
+
     // matrix.hpp
     py::class_<Matrix>(m, "Matrix")
 

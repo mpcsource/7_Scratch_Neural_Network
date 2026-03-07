@@ -20,26 +20,22 @@ Matrix Model::forward(Matrix x)
 
 void Model::backward(Matrix label, float learning_rate, int batch_size)
 {
-
+    // ---- Pass 1: compute all delta_z values using the CURRENT (pre-update) weights ----
     Layer *out_layer = this->layers_.back();
     Matrix dloss = out_layer->a_.subtract(label);
-    Matrix delta_o = dloss.multiply(out_layer->da_);
-    delta_o = delta_o.multiply(1.0f / batch_size);
-
+    Matrix delta_o = dloss.multiply(out_layer->da_).multiply(1.0f / batch_size);
     out_layer->delta_z = delta_o;
-    out_layer->backward(learning_rate);
 
-    for (int i = this->layers_.size() - 1; i >= 0; i--)
+    for (int i = (int)this->layers_.size() - 2; i >= 0; i--)
     {
-        if (i == this->layers_.size() - 1)
-            continue; // Skip output layer
         Layer *next_layer = this->layers_.at(i + 1);
-        Layer *layer = this->layers_.at(i);
-
-        auto delta_h = next_layer->weights().transpose().dot(next_layer->delta_z).multiply(layer->da_);
-        layer->delta_z = delta_h;
-        layer->backward(learning_rate);
+        Layer *layer     = this->layers_.at(i);
+        layer->delta_z = next_layer->weights().transpose().dot(next_layer->delta_z).multiply(layer->da_);
     }
+
+    // ---- Pass 2: update weights now that all deltas are correct ----
+    for (Layer *layer : this->layers_)
+        layer->backward(learning_rate);
 }
 
 void Model::backprop(Matrix data, Matrix labels, int epochs, float learning_rate, int batch_size)

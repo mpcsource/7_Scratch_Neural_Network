@@ -2,6 +2,8 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <unordered_map>
+#include <vector>
 #include "math/matrix.hpp"
 #include <math.h>
 
@@ -21,3 +23,6 @@ std::tuple<Matrix, std::vector<float>, std::vector<float>> normalizeData(Matrix 
 Matrix unnormalizeData(Matrix data, std::vector<float> means, std::vector<float> stds);
 
 std::tuple<Matrix, Matrix> getBatchOfSize(Matrix X, Matrix Y, int batch_size = 32);
+
+// Print a quality report: column names, missing-value counts, and basic stats.
+void inspectData(const std::string& path, char separator, bool header);

@@ -1,55 +1,125 @@
 #include "data/loader.hpp"
+#include <unordered_map>
+#include <iostream>
+#include <iomanip>
+#include <algorithm>
+#include <limits>
 
-Matrix loadData(const std::string& path, char separator, bool header, bool limitRows, int limitRowsAmount) {
-    
-    // # Initialise data matrix.
-    std::vector<std::vector<float>> data;
+// ─── helpers ──────────────────────────────────────────────────────────────────
 
-    // # Load file.
+// Read every cell as a raw string, optionally capped at limitRowsAmount data rows.
+// Returns {column_names, raw_rows}.
+static std::pair<std::vector<std::string>, std::vector<std::vector<std::string>>>
+readRaw(const std::string& path, char separator, bool header,
+        bool limitRows, int limitRowsAmount)
+{
+    std::vector<std::string> col_names;
+    std::vector<std::vector<std::string>> raw;
+
     std::ifstream file(path);
+    if (!file)
+        throw std::invalid_argument("Failed to open file: " + path);
 
-    // # Guarantee file loaded successfully.
-    if(!file)
-        throw std::invalid_argument("Failed to open file.");
-
-    // # To store each line.
     std::string line;
-
-    // # Iterate over lines.
-    for(int iteration = 0; std::getline(file, line); iteration++) {
-        
-        if(limitRows && iteration >= limitRowsAmount)
+    for (int iteration = 0; std::getline(file, line); iteration++) {
+        if (limitRows && (int)raw.size() >= limitRowsAmount)
             break;
 
-        // # Ignore header.
-        if(iteration == 0 && header)
-            continue;
-
-        std::vector<float> row;
-        std::stringstream ss (line);
+        std::vector<std::string> row;
+        std::stringstream ss(line);
         std::string cell;
+        while (std::getline(ss, cell, separator))
+            row.push_back(cell);
 
-        // # Store each line.
-        // # (this really needs to be improved.)
-        while(std::getline(ss, cell, separator)) {
-            try
-            {
-                row.push_back(std::stof(cell));
-            }
-            catch(const std::exception& e) {}         
+        if (iteration == 0 && header) {
+            col_names = row;
+            continue;
         }
+        if (!row.empty())
+            raw.push_back(row);
+    }
+    return {col_names, raw};
+}
 
-        // # Store row.
-        data.push_back(row);
+// ─── loadData ─────────────────────────────────────────────────────────────────
+
+Matrix loadData(const std::string& path, char separator, bool header,
+                bool limitRows, int limitRowsAmount)
+{
+    auto [col_names, raw] = readRaw(path, separator, header, limitRows, limitRowsAmount);
+
+    if (raw.empty())
+        throw std::invalid_argument("No data rows found in: " + path);
+
+    int rows = (int)raw.size();
+    int cols = (int)raw[0].size();
+
+    // ── Pass 1: classify each column and build string→float label encodings ──
+    std::vector<bool>                              is_string(cols, false);
+    std::vector<std::unordered_map<std::string,float>> encodings(cols);
+    std::vector<float> col_sum(cols, 0.f);
+    std::vector<int>   col_count(cols, 0);
+
+    for (int j = 0; j < cols; j++) {
+        std::unordered_map<std::string,float> enc;
+        float next_label = 0.f;
+
+        for (int i = 0; i < rows; i++) {
+            if (j >= (int)raw[i].size() || raw[i][j].empty())
+                continue;   // missing – handled in pass 2
+
+            try {
+                float v = std::stof(raw[i][j]);
+                col_sum[j]   += v;
+                col_count[j] += 1;
+            } catch (...) {
+                is_string[j] = true;
+                if (enc.find(raw[i][j]) == enc.end()) {
+                    std::cout << "[loadData] encoding column "
+                              << (col_names.empty() ? std::to_string(j) : col_names[j])
+                              << ": \"" << raw[i][j] << "\" → " << next_label << "\n";
+                    enc[raw[i][j]] = next_label++;
+                }
+            }
+        }
+        if (is_string[j])
+            encodings[j] = std::move(enc);
     }
 
-    int rows = data.size();
-    int cols = data.at(0).size();
-    Matrix data_matrix (rows, cols);
+    // ── Compute per-column mean for numeric imputation ─────────────────────
+    std::vector<float> col_mean(cols, 0.f);
+    for (int j = 0; j < cols; j++)
+        if (!is_string[j] && col_count[j] > 0)
+            col_mean[j] = col_sum[j] / (float)col_count[j];
 
-    for(int row = 0; row < rows; row++)
-        for(int col = 0; col < cols; col++)
-            data_matrix(row, col) = data[row][col];
+    // ── Pass 2: fill matrix ────────────────────────────────────────────────
+    int imputed = 0;
+    Matrix data_matrix(rows, cols);
+
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            bool missing = j >= (int)raw[i].size() || raw[i][j].empty();
+
+            if (missing) {
+                data_matrix(i, j) = is_string[j] ? 0.f : col_mean[j];
+                imputed++;
+            } else if (is_string[j]) {
+                data_matrix(i, j) = encodings[j].at(raw[i][j]);
+            } else {
+                try {
+                    data_matrix(i, j) = std::stof(raw[i][j]);
+                } catch (...) {
+                    // Non-numeric cell in a numeric column – treat as missing.
+                    data_matrix(i, j) = col_mean[j];
+                    imputed++;
+                }
+            }
+        }
+    }
+
+    if (imputed > 0)
+        std::cout << "[loadData] imputed " << imputed
+                  << " missing value(s) with column means.\n";
 
     return data_matrix;
 }
@@ -84,19 +154,21 @@ std::tuple<Matrix, Matrix, Matrix, Matrix> trainTestSplit(Matrix data, int y_col
         if(i % 2 == 0) {
             // # Fill training row.
             y_train(train_row, 0) = data(i, y_col);
+            int x_col = 0;
             for(int j = 0; j < data.cols(); j++) {
                 if(j == y_col)
                     continue; // # Skip y_col.
-                x_train(train_row, j) = data(i, j);
+                x_train(train_row, x_col++) = data(i, j);
             }
             train_row++;
         } else {
             // # Fill testing row.
             y_test(test_row, 0) = data(i, y_col);
+            int x_col = 0;
             for(int j = 0; j < data.cols(); j++) {
                 if(j == y_col)
                     continue; // # Skip y_col.
-                x_test(test_row, j) = data(i, j);
+                x_test(test_row, x_col++) = data(i, j);
             }
             test_row++;
         }
@@ -176,4 +248,94 @@ std::tuple<Matrix, Matrix> getBatchOfSize(Matrix X, Matrix Y, int batch_size) {
     }
 
     return {batch_x, batch_y};
+}
+
+// ─── inspectData ──────────────────────────────────────────────────────────────
+
+void inspectData(const std::string& path, char separator, bool header)
+{
+    auto [col_names, raw] = readRaw(path, separator, header, false, 0);
+
+    if (raw.empty()) {
+        std::cout << "[inspectData] No data rows found.\n";
+        return;
+    }
+
+    int rows = (int)raw.size();
+    int cols = (int)raw[0].size();
+
+    // Pad col_names if header was absent.
+    while ((int)col_names.size() < cols)
+        col_names.push_back("col_" + std::to_string(col_names.size()));
+
+    // Per-column accumulators.
+    struct ColStats {
+        int  missing  = 0;
+        bool is_str   = false;
+        float vmin    = std::numeric_limits<float>::max();
+        float vmax    = std::numeric_limits<float>::lowest();
+        double sum    = 0.0;
+        int  count    = 0;
+        std::unordered_map<std::string,int> value_counts;
+    };
+    std::vector<ColStats> stats(cols);
+
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (j >= (int)raw[i].size() || raw[i][j].empty()) {
+                stats[j].missing++;
+                continue;
+            }
+            const std::string& cell = raw[i][j];
+            try {
+                float v = std::stof(cell);
+                stats[j].sum   += v;
+                stats[j].count += 1;
+                stats[j].vmin   = std::min(stats[j].vmin, v);
+                stats[j].vmax   = std::max(stats[j].vmax, v);
+            } catch (...) {
+                stats[j].is_str = true;
+                stats[j].value_counts[cell]++;
+            }
+        }
+    }
+
+    // ── Print report ──────────────────────────────────────────────────────
+    const int W = 20;
+    std::cout << "\n" << std::string(80, '=') << " Data Inspection " << std::string(80, '=') << "\n";
+    std::cout << "File  : " << path << "\n";
+    std::cout << "Rows  : " << rows << "   Columns: " << cols << "\n\n";
+
+    std::cout << std::left
+              << std::setw(W) << "Column"
+              << std::setw(9)  << "Missing"
+              << std::setw(10) << "Type"
+              << std::setw(12) << "Min"
+              << std::setw(12) << "Max"
+              << "Mean / Categories\n";
+    std::cout << std::string(80, '-') << "\n";
+
+    for (int j = 0; j < cols; j++) {
+        const ColStats& s = stats[j];
+        std::cout << std::left << std::setw(W) << col_names[j];
+        std::cout << std::setw(9) << s.missing;
+
+        if (s.is_str) {
+            std::cout << std::setw(10) << "string"
+                      << std::setw(12) << "-"
+                      << std::setw(12) << "-";
+            // List unique categories.
+            std::cout << s.value_counts.size() << " unique: ";
+            for (auto& [k, cnt] : s.value_counts)
+                std::cout << k << "(" << cnt << ") ";
+        } else {
+            float mean = s.count > 0 ? (float)(s.sum / s.count) : 0.f;
+            std::cout << std::setw(10) << "numeric"
+                      << std::setw(12) << (s.count > 0 ? std::to_string(s.vmin) : "N/A")
+                      << std::setw(12) << (s.count > 0 ? std::to_string(s.vmax) : "N/A")
+                      << mean;
+        }
+        std::cout << "\n";
+    }
+    std::cout << std::string(80, '=') << "\n\n";
 }

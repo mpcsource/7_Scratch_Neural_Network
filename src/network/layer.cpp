@@ -13,8 +13,8 @@ Layer::Layer(int nin, int nout, std::string activation) : weights_(Matrix(nout, 
         // He initialization.
         limit = sqrt(2.0f / nin);
     else
-        // Default initialization.
-        limit = 1.0f;
+        // Glorot/Xavier initialization (used for linear and any unknown activation).
+        limit = sqrt(6.0f / (nin + nout));
     // Fill weights with random values in range [-limit, limit].
     for (int i = 0; i < nout; i++)
         for (int j = 0; j < nin; j++)

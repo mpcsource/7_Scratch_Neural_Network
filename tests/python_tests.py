@@ -42,20 +42,22 @@ y_train, mean_y, std_y = snn.normalize_data(y_train)
 y_test = snn.normalize_data(y_test, mean_y, std_y)
 print("Done normalizing.")
 
-# Create 3 layers.
-l1 = snn.Layer(8, 64)
-l2 = snn.Layer(64, 64)
-l3 = snn.Layer(64, 1, "linear")
+# Create 4 layers.
+l1 = snn.Layer(9, 256, "relu")
+l2 = snn.Layer(256, 128, "relu")
+l3 = snn.Layer(128, 64, "relu")
+l4 = snn.Layer(64, 1, "linear")
 
 # Create model.
 model = snn.Model("mse")
 model.append_layer(l1)
 model.append_layer(l2)
 model.append_layer(l3)
+model.append_layer(l4)
 
 # Backpropagate the model.
 print("Training...")
-model.backprop(x_train, y_train, 300, 0.01, 32*3)
+model.backprop(x_train, y_train, 600, 0.001, 256)
 print("Training done.")
 
 # Unnormalize.
