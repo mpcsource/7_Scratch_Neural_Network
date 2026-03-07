@@ -49,7 +49,7 @@ l3 = snn.Layer(128, 64, "relu")
 l4 = snn.Layer(64, 1, "linear")
 
 # Create model.
-model = snn.Model("mse")
+model = snn.Model("mse", snn.Decay.COSINE, lr_min=1e-5)
 model.append_layer(l1)
 model.append_layer(l2)
 model.append_layer(l3)
@@ -57,7 +57,7 @@ model.append_layer(l4)
 
 # Backpropagate the model.
 print("Training...")
-model.backprop(x_train, y_train, 600, 0.001, 256)
+model.backprop(x_train, y_train, 300, 0.01, 256)
 print("Training done.")
 
 # Unnormalize.

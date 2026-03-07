@@ -146,6 +146,14 @@ PYBIND11_MODULE(scratchneuralnetwork, m) {
         )
     ;
 
+    // Decay enum
+    py::enum_<Decay>(m, "Decay")
+        .value("NONE",        Decay::NONE)
+        .value("EXPONENTIAL", Decay::EXPONENTIAL)
+        .value("STEP",        Decay::STEP)
+        .value("COSINE",      Decay::COSINE)
+        .export_values();
+
     // model.hpp
     py::class_<Model>(m, "Model")
     
@@ -153,12 +161,22 @@ PYBIND11_MODULE(scratchneuralnetwork, m) {
         // Constructors
         // ============
 
-        .def(py::init<std::string>(),
-            py::arg("loss")
+        .def(py::init<std::string, Decay, float, int, float>(),
+            py::arg("loss"),
+            py::arg("decay")       = Decay::NONE,
+            py::arg("decay_rate")  = 0.96f,
+            py::arg("decay_steps") = 10,
+            py::arg("lr_min")      = 1e-6f
         )
 
         .def("append_layer", &Model::appendLayer)
-        .def("backprop", &Model::backprop)
+        .def("backprop", &Model::backprop,
+            py::arg("data"),
+            py::arg("labels"),
+            py::arg("epochs")        = 10,
+            py::arg("learning_rate") = 0.01f,
+            py::arg("batch_size")    = 32
+        )
         .def("test", &Model::test)
 
     ;
