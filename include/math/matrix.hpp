@@ -43,6 +43,7 @@ public:
     Matrix(const Matrix& other); // Copy constructor
     Matrix(Matrix&& other) noexcept; // Move constructor
     Matrix& operator=(const Matrix& other); // Copy assignment operator
+    Matrix& operator=(Matrix&& other) noexcept; // Move assignment operator
 
     ~Matrix();
 

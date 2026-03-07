@@ -58,7 +58,7 @@ std::tuple<Matrix, Matrix, Matrix, Matrix> trainTestSplit(Matrix data, int y_col
 
     // # Shuffle data.
     for(int i = 0; i < data.rows(); i++) {
-        int j = (rand() % data.cols()) + 1;
+        int j = rand() % data.rows();
 
         Matrix a_i = data.getRow(i);
         Matrix a_j = data.getRow(j);
@@ -163,7 +163,7 @@ std::tuple<Matrix, Matrix> getBatchOfSize(Matrix X, Matrix Y, int batch_size) {
     Matrix batch_y (batch_size, Y.cols());
 
     for(int i = 0; i < batch_size; i++) {
-        int random_row_index = rand() % X.rows()+1; 
+        int random_row_index = rand() % X.rows();
         auto row_x = X.getRow(random_row_index);
         auto row_y = Y.getRow(random_row_index);
         

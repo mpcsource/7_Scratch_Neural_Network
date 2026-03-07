@@ -16,32 +16,32 @@ PYBIND11_MODULE(scratchneuralnetwork, m) {
         py::arg("header"),
         py::arg("limit_rows") = false,
         py::arg("limit_rows_amount") = 10000,
-        py::return_value_policy::reference
+        py::return_value_policy::move
     );
 
     m.def("train_test_split", &trainTestSplit,
         py::arg("data"),
         py::arg("y_col"),
-        py::return_value_policy::reference
+        py::return_value_policy::move
     );
 
     m.def("normalize_data", static_cast<Matrix (*)(Matrix, std::vector<float>, std::vector<float>)>(&normalizeData),
         py::arg("data"),
         py::arg("means"),
         py::arg("stds"),
-        py::return_value_policy::reference
+        py::return_value_policy::move
     );
 
     m.def("normalize_data", static_cast<std::tuple<Matrix, std::vector<float>, std::vector<float>> (*)(Matrix)>(&normalizeData),
         py::arg("data"),
-        py::return_value_policy::reference
+        py::return_value_policy::move
     );
 
     m.def("unnormalize_data", &unnormalizeData,
         py::arg("data"),
         py::arg("means"),
         py::arg("stds"),
-        py::return_value_policy::reference
+        py::return_value_policy::move
     );
 
     // matrix.hpp
@@ -112,8 +112,8 @@ PYBIND11_MODULE(scratchneuralnetwork, m) {
         //.def("__str__", &Matrix::basicPrint)
         .def("print", &Matrix::basicPrint)
 
-        .def("head", &Matrix::head, py::return_value_policy::reference)
-        .def("tail", &Matrix::tail, py::return_value_policy::reference)
+        .def("head", &Matrix::head, py::return_value_policy::move)
+        .def("tail", &Matrix::tail, py::return_value_policy::move)
 
         // Element access: matrix[row, col]
         .def("__getitem__", [](const Matrix &m, std::tuple<int, int> idx) {

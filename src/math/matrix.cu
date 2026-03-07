@@ -12,12 +12,17 @@
 // Empty constructor
 Matrix::Matrix() : rows_(0), cols_(0), h_data() {}
 
+// Minimum number of elements to warrant GPU allocation
+#define CUDA_MIN_ELEMENTS 256
+
 // Fill constructor
 Matrix::Matrix(int r, int c, float fill) : rows_(r), cols_(c), h_data(r * c, fill) {
 #ifdef USE_CUDA
-    if(get_backend() == Backend::CUDA) {
-        cudaMalloc(&d_data, r * c * sizeof(float));
-        toDevice();
+    if(get_backend() == Backend::CUDA && r * c >= CUDA_MIN_ELEMENTS) {
+        if (cudaMalloc(&d_data, r * c * sizeof(float)) != cudaSuccess)
+            d_data = nullptr;
+        else
+            toDevice();
     }
 #endif
 }
@@ -25,9 +30,11 @@ Matrix::Matrix(int r, int c, float fill) : rows_(r), cols_(c), h_data(r * c, fil
 // Array constructor
 Matrix::Matrix(int r, int c, std::vector<float> data) : rows_(r), cols_(c), h_data(std::move(data)) {
 #ifdef USE_CUDA
-    if(get_backend() == Backend::CUDA) {
-        cudaMalloc(&d_data, r * c * sizeof(float));
-        toDevice();
+    if(get_backend() == Backend::CUDA && r * c >= CUDA_MIN_ELEMENTS) {
+        if (cudaMalloc(&d_data, r * c * sizeof(float)) != cudaSuccess)
+            d_data = nullptr;
+        else
+            toDevice();
     }
 #endif
 }
@@ -35,13 +42,15 @@ Matrix::Matrix(int r, int c, std::vector<float> data) : rows_(r), cols_(c), h_da
 // Copy constructor
 Matrix::Matrix(const Matrix& other) : rows_(other.rows_), cols_(other.cols_), h_data() {
 #ifdef USE_CUDA
-    other.toHost(); // ensure h_data is up to date before copying
+    if (other.d_data != nullptr) other.toHost();
 #endif
     h_data = other.h_data;
 #ifdef USE_CUDA
-    if (get_backend() == Backend::CUDA) {
-        cudaMalloc(&d_data, rows_ * cols_ * sizeof(float));
-        toDevice();
+    if (get_backend() == Backend::CUDA && rows_ * cols_ >= CUDA_MIN_ELEMENTS) {
+        if (cudaMalloc(&d_data, rows_ * cols_ * sizeof(float)) != cudaSuccess)
+            d_data = nullptr;
+        else
+            toDevice();
     }
 #endif
 }
@@ -68,7 +77,7 @@ Matrix& Matrix::operator=(const Matrix& other) {
     rows_ = other.rows_;
     cols_ = other.cols_;
 #ifdef USE_CUDA
-    other.toHost(); // ensure h_data is up to date before copying
+    if (other.d_data != nullptr) other.toHost();
 #endif
     h_data = other.h_data;
 
@@ -77,14 +86,47 @@ Matrix& Matrix::operator=(const Matrix& other) {
         cudaFree(d_data);
         d_data = nullptr; 
     }
-    if (get_backend() == Backend::CUDA) {
-        cudaMalloc(&d_data, rows_ * cols_ * sizeof(float));
-        gpu_dirty = true;
-        cpu_dirty = false;
-        toDevice();
+    if (get_backend() == Backend::CUDA && rows_ * cols_ >= CUDA_MIN_ELEMENTS) {
+        if (cudaMalloc(&d_data, rows_ * cols_ * sizeof(float)) != cudaSuccess)
+            d_data = nullptr;
+        else {
+            gpu_dirty = true;
+            cpu_dirty = false;
+            toDevice();
+        }
     }
 #endif
 
+    return *this;
+}
+
+// Move assignment operator
+Matrix& Matrix::operator=(Matrix&& other) noexcept {
+    if (this == &other) return *this;
+
+    // Free existing GPU memory
+#ifdef USE_CUDA
+    if (d_data != nullptr) {
+        cudaFree(d_data);
+        d_data = nullptr;
+    }
+#endif
+
+    rows_ = other.rows_;
+    cols_ = other.cols_;
+    h_data = std::move(other.h_data);
+
+#ifdef USE_CUDA
+    d_data = other.d_data;
+    cpu_dirty = other.cpu_dirty;
+    gpu_dirty = other.gpu_dirty;
+    other.d_data = nullptr;
+    other.cpu_dirty = false;
+    other.gpu_dirty = false;
+#endif
+
+    other.rows_ = 0;
+    other.cols_ = 0;
     return *this;
 }
 
@@ -156,7 +198,7 @@ Matrix Matrix::add(const Matrix& other) const {
 #ifdef USE_CUDA
 
     // Use CUDA-based implementation if allowed and possible
-    if (get_backend() == Backend::CUDA) {
+    if (get_backend() == Backend::CUDA && this->d_data && other.d_data && out.d_data) {
     
         this->toDevice();
         other.toDevice();
@@ -278,7 +320,7 @@ Matrix Matrix::dot(const Matrix& other) const {
 #ifdef USE_CUDA
 
     // Use CUDA-based implementation if allowed and possible
-    if (get_backend() == Backend::CUDA) {
+    if (get_backend() == Backend::CUDA && this->d_data && other.d_data && out.d_data) {
 
         this->toDevice();
         other.toDevice();

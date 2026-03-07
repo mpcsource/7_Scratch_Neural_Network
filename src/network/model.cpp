@@ -29,7 +29,7 @@ void Model::backward(Matrix label, float learning_rate, int batch_size)
     out_layer->delta_z = delta_o;
     out_layer->backward(learning_rate);
 
-    for (int i = this->layers_.size() - 1; i > 0; i--)
+    for (int i = this->layers_.size() - 1; i >= 0; i--)
     {
         if (i == this->layers_.size() - 1)
             continue; // Skip output layer
