@@ -10,6 +10,7 @@ If you only want to build the project, run `make build`.
 - Add CUDA stuff
 - Store weights (Save and load models)
 - Activation functions
+- Up next: Mudar layers e models para Python
 
 
 # Roadmap

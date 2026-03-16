@@ -57,7 +57,7 @@ model.append_layer(l4)
 
 # Backpropagate the model.
 print("Training...")
-model.backprop(x_train, y_train, 300, 0.01, 256)
+model.backprop(x_train, y_train, 10, 0.01, 256)
 print("Training done.")
 
 # Unnormalize.

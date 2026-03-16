@@ -82,7 +82,7 @@ void Model::backprop(Matrix data, Matrix labels, int epochs, float learning_rate
 
         std::cout << "Epoch: " << std::setw(4) << epoch_i + 1
                   << "  lr: " << std::scientific << std::setprecision(3) << lr
-                  << std::defaultfloat << "\n";
+                  << std::defaultfloat << std::setprecision(6) << "\n";
 
         int steps = data.rows() / batch_size;
         for (int step = 0; step < steps; step++) {
