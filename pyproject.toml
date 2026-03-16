@@ -1,0 +1,25 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.13"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "scratchneuralnetwork"
+version = "0.1.0"
+description = "ML library with C++/CUDA tensor backend and Python NN API"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[tool.scikit-build]
+minimum-version = "0.10"
+cmake.source-dir = "cpp"
+wheel.packages = ["python/scratchneuralnetwork"]
+
+[tool.scikit-build.sdist]
+include = [
+  "cpp/**",
+  "python/**",
+  "tests/**",
+  "README.md",
+  "LICENSE",
+  "pyproject.toml"
+]
