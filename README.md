@@ -12,6 +12,10 @@ If you only want to build the project, run `make build`.
 - Activation functions
 - Up next: Mudar layers e models para Python
 
+BRANCH "python-migrations" FAZ 2 GRANDES COISAS
+1. TORNAR FORMATO DO PROJETO EM EXTENSÃO DE PYTHON
+2. MUDAR LAYER & MODEL P/ PYTHON
+3. opcional: melhorar CMakeLists
 
 # Roadmap
 - Improve Makefiles and Integration with VSCode Tasks (Pressing F5 gives multiple options, running Python tests, running C++ tests, building, cleaning build, etc...)
