@@ -4,6 +4,7 @@ Testing/
 
 # Prerequisites
 *.d
+*.pyc
 
 # Compiled Object files
 *.slo
