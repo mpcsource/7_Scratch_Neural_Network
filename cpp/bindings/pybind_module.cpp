@@ -13,11 +13,13 @@ PYBIND11_MODULE(_core, m) {
             py::arg("rows") = 0,
             py::arg("cols") = 0
         )
-        .def(py::init<const Tensor&>())
         .def("add_tensor", &Tensor::add_tensor)
         .def("sub_tensor", &Tensor::sub_tensor)
         .def("mul_tensor", &Tensor::mul_tensor)
         .def("mul_tensor_number", &Tensor::mul_tensor_number)
         .def("dot_tensor", &Tensor::dot_tensor)
+        .def("zero_grad", &Tensor::zero_grad)
+        .def("accumulate_grad", &Tensor::accumulate_grad)
+        .def("get_grad", &Tensor::get_grad)
     ;
 }
