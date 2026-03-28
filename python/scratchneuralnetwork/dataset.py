@@ -16,7 +16,7 @@ class Dataset:
         self.normalized = False
 
     def normalize(self):
-        ...
+        self.normalized = True
 
     def unnormalize(self):
-        ...
+        self.normalized = False
