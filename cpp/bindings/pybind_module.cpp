@@ -9,9 +9,9 @@ PYBIND11_MODULE(_core, m) {
     m.doc() = "This really needs to be something.";
 
     py::class_<Tensor>(m, "CTensor")
-        .def(py::init<int, int>(),
-            py::arg("rows") = 0,
-            py::arg("cols") = 0
+        .def(py::init<std::vector<int>, std::vector<float>>(),
+            py::arg("shape") = std::vector<int>{},
+            py::arg("data") = std::vector<float>{}
         )
         .def("add_tensor", &Tensor::add_tensor)
         .def("sub_tensor", &Tensor::sub_tensor)

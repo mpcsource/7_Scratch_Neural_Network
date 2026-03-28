@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections.abc import Sequence
 from enum import Enum
 from typing import Union
 
@@ -16,11 +17,60 @@ class Operation(Enum):
 class Tensor:
     """Python Tensor: holds a CTensor backend + autograd metadata."""
 
-    def __init__(self, rows: int = 0, cols: int = 0, requires_grad: bool = False):
-        self._impl: CTensor = CTensor(rows, cols)
+    def __init__(self, data=None, requires_grad: bool = False):
+        shape, flat = self._to_shape_and_flat(data)
+        self._impl: CTensor = CTensor(shape, flat)
         self.op: Operation | None = None
         self.parents: list[Tensor] | None = None
         self.requires_grad: bool = requires_grad
+
+    @staticmethod
+    def _to_shape_and_flat(data) -> tuple[list[int], list[float]]:
+        if data is None:
+            return [], []
+
+        if isinstance(data, (int, float)):
+            return [1], [float(data)]
+
+        if not isinstance(data, Sequence) or isinstance(data, (str, bytes)):
+            raise TypeError("Tensor data must be a scalar or nested sequence of numbers")
+
+        shape: list[int] = []
+        flat: list[float] = []
+
+        def walk(node, depth: int) -> None:
+            if isinstance(node, (int, float)):
+                flat.append(float(node))
+                return
+
+            if not isinstance(node, Sequence) or isinstance(node, (str, bytes)):
+                raise TypeError("Tensor data must contain only numbers or nested sequences")
+
+            length = len(node)
+            if depth == len(shape):
+                shape.append(length)
+            elif shape[depth] != length:
+                raise ValueError("Ragged tensor data is not supported")
+
+            for item in node:
+                walk(item, depth + 1)
+
+        walk(data, 0)
+        return shape, flat
+
+    @staticmethod
+    def zeros(*shape: int) -> Tensor:
+        if len(shape) == 1 and isinstance(shape[0], tuple):
+            shape = shape[0]
+        if any(dim < 0 for dim in shape):
+            raise ValueError("Tensor dimensions must be non-negative")
+
+        def build(level: int):
+            if level == len(shape):
+                return 0.0
+            return [build(level + 1) for _ in range(shape[level])]
+
+        return Tensor(build(0))
 
     @staticmethod
     def _from_impl(impl: CTensor, op: Operation, parents: list[Tensor]) -> Tensor:

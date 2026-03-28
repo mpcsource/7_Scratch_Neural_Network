@@ -13,8 +13,8 @@ class Layer:
     ):
         self.nin = nin
         self.nout = nout
-        self.weights = Tensor(nout, nin)
-        self.biases = Tensor(nout, 1)
+        self.weights = Tensor.zeros(nout, nin)
+        self.biases = Tensor.zeros(nout, 1)
         self.x = None # Unmodified input
         self.z = None # Output before actino function
         self.a = None # Output after activation function
@@ -31,7 +31,7 @@ class Layer:
         self.x = tin
         self.z = self.weights @ self.x + self.biases
         self.a = self.z
-        self.da = Tensor(0, 0)
+        self.da = Tensor.zeros(0, 0)
 
     def __repr__(self):
         return f"Layer()"
