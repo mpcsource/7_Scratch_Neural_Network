@@ -10,7 +10,8 @@ class Layer:
         self, 
         nin:int = 0,
         nout:int = 0,    
-    ):
+        ):
+        
         self.nin = nin
         self.nout = nout
         self.weights = Tensor.zeros(nout, nin)
@@ -27,11 +28,12 @@ class Layer:
     def forward(
         self,
         tin:Tensor, # Tensor input
-    ) -> None:
+        ) -> None:
+        
         self.x = tin
         self.z = self.weights @ self.x + self.biases
         self.a = self.z
         self.da = Tensor.zeros(0, 0)
 
     def __repr__(self):
-        return f"Layer()"
+        return f"Layer(nin={self.nin}, nout={self.nout})"

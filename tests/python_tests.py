@@ -1,12 +1,14 @@
 import scratchneuralnetwork as snn
 
-t = snn.Tensor()
-print("Tensor:", t)
+# Dataset
+dataset = snn.Dataset(path="/home/miguel/7_Scratch_Neural_Network/tests/data.csv")
+print(dataset)
+print(dataset.head())
 
-a = t + snn.Tensor()
 
-l = snn.Layer()
-print("Layer:", l)
 
-m = snn.Model()
+m = snn.Model(layers=[
+    snn.Layer(),
+])
+
 print("Model:", m)
