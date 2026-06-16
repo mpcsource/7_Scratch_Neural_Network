@@ -46,12 +46,20 @@ class Layer:
         self.z: Tensor = None
         self.a: Tensor = None
         self.da: Tensor = None
+        self.delta_z: Tensor = None
 
     def forward(self, tin: Tensor) -> None:
         self.x = tin
         self.z = self.weights @ self.x + self.biases
         self.a = self.acti_fun.forward(self.z)
         self.da = self.acti_fun.derivative(self.z)
+
+    def backward(self, learning_rate: float) -> None:
+        grad_w = self.delta_z @ self.x.transpose()
+        grad_b = self.delta_z.sum_cols()
+
+        self.weights = self.weights - grad_w * learning_rate
+        self.biases = self.biases - grad_b * learning_rate
 
     def __repr__(self):
         return f"Layer(nin={self.nin}, nout={self.nout}, acti_fun={self.acti_fun})"

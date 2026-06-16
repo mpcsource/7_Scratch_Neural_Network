@@ -212,6 +212,34 @@ class Tensor:
             )
         raise TypeError(f"Unsupported operand type for *: {type(other)}")
 
+    @staticmethod
+    def ones(*shape: int) -> Tensor:
+        if len(shape) == 1 and isinstance(shape[0], tuple):
+            shape = shape[0]
+        if any(dim < 0 for dim in shape):
+            raise ValueError("Tensor dimensions must be non-negative")
+
+        def build(level: int):
+            if level == len(shape):
+                return 1.0
+            return [build(level + 1) for _ in range(shape[level])]
+
+        return Tensor(build(0))
+
+    def transpose(self) -> Tensor:
+        return Tensor._from_impl(
+            self._impl.transpose_tensor(),
+            None,
+            [self],
+        )
+
+    def sum_cols(self) -> Tensor:
+        return Tensor._from_impl(
+            self._impl.sum_cols_tensor(),
+            None,
+            [self],
+        )
+
     # Dot product
     def __matmul__(
             self, 
