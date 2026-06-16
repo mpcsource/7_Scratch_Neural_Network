@@ -1,5 +1,7 @@
 .PHONY: help build clean rebuild test test-python test-cpp rebuild-test-python rebuild-test-cpp
 
+PYTHON_EXE = $(shell grep -s '^PYTHON_EXECUTABLE' build/CMakeCache.txt 2>/dev/null | head -1 | cut -d= -f2 || echo python3)
+
 help:
 	@echo "Available targets:"
 	@echo "  make build                    - Build the project"
@@ -15,6 +17,8 @@ build:
 	clear
 	cmake -S . -B build
 	cmake --build build -- -j$(nproc)
+	rm -f ../python/scratchneuralnetwork/_core.*.so
+	cp build/_core.cpython-*.so ../python/scratchneuralnetwork/
 
 clean:
 	rm -rf build
@@ -22,7 +26,8 @@ clean:
 rebuild: clean build
 
 test-python:
-	PYTHONPATH=build python3 tests/python_tests.py
+	find ../python ../tests -name __pycache__ -type d -exec rm -rf {} + 2>/dev/null; true
+	PYTHONPATH=../python $(PYTHON_EXE) ../tests/python_tests.py
 
 test-cpp:
 	ctest --test-dir build -V

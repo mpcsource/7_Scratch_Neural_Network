@@ -88,6 +88,7 @@ class Tensor:
         t = Tensor.__new__(Tensor)  # bypasses __init__, no CTensor allocation
         t._impl = impl
         t.shape = list(impl.shape)
+        t.flat = list(impl.flat)
         t.op = op
         t.parents = parents
         t.requires_grad = False
@@ -106,6 +107,14 @@ class Tensor:
     def accumulate_grad(self, incoming: Tensor) -> None:
         """Accumulate gradient: grad += incoming (delegated to C++)."""
         self._impl.accumulate_grad(incoming._impl)
+
+    def head(self, n: int = 5) -> Tensor:
+        return Tensor(self.flat[:n * self.shape[1]]) if len(self.shape) >= 2 else Tensor(self.flat[:n])
+
+    def tail(self, n: int = 5) -> Tensor:
+        total = (self.shape[0] * self.shape[1]) if len(self.shape) >= 2 else self.shape[0]
+        row_size = self.shape[1] if len(self.shape) >= 2 else 1
+        return Tensor(self.flat[total - n * row_size:]) if len(self.shape) >= 2 else Tensor(self.flat[-n:])
 
     def __repr__(self) -> str:
         return f"Tensor(shape={self.shape})"
@@ -178,6 +187,13 @@ class Tensor:
             self._impl.add_tensor(other._impl),
             Operation.ADDITION,
             [self, other],
+        )
+
+    def add_bias(self, bias: Tensor) -> Tensor:
+        return Tensor._from_impl(
+            self._impl.add_bias(bias._impl),
+            Operation.ADDITION,
+            [self, bias],
         )
 
     # Subtraction

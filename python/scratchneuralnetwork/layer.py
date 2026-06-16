@@ -1,11 +1,20 @@
 from .tensor import Tensor
 from enum import Enum
+import math
+import random
 
 
 class ActiFun(Enum):
     NONE = None
     SIGMOID = 1
     RELU = 2
+
+    def _limit(self, nin: int, nout: int) -> float:
+        match self:
+            case ActiFun.RELU:
+                return math.sqrt(2.0 / nin)
+            case _:
+                return math.sqrt(6.0 / (nin + nout))
 
     def forward(self, x: Tensor) -> Tensor:
         match self:
@@ -40,7 +49,10 @@ class Layer:
         self.nin: int = nin
         self.nout: int = nout
         self.acti_fun: ActiFun = acti_fun
-        self.weights: Tensor = Tensor.zeros(nout, nin)
+
+        limit = acti_fun._limit(nin, nout)
+        data = [[random.uniform(-limit, limit) for _ in range(nin)] for _ in range(nout)]
+        self.weights: Tensor = Tensor(data)
         self.biases: Tensor = Tensor.zeros(nout, 1)
         self.x: Tensor = None
         self.z: Tensor = None
@@ -50,7 +62,7 @@ class Layer:
 
     def forward(self, tin: Tensor) -> None:
         self.x = tin
-        self.z = self.weights @ self.x + self.biases
+        self.z = (self.weights @ self.x).add_bias(self.biases)
         self.a = self.acti_fun.forward(self.z)
         self.da = self.acti_fun.derivative(self.z)
 

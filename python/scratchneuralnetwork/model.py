@@ -56,17 +56,15 @@ class Model:
             batch_size: int = None,
             ) -> None:
 
+        # data shape is (n_features, n_samples)
+        n_samples = data.shape[1] if len(data.shape) > 1 else 1
         if batch_size is None:
-            batch_size = data.shape[0]
+            batch_size = n_samples
 
-        # TODO: implement mini-batch batching when Tensor supports slicing.
-        # For now, runs full-batches only (batch_size = n_samples).
-        n_samples = data.shape[0]
         steps = n_samples // batch_size
 
         for epoch in range(epochs):
             for step in range(steps):
-                # TODO: extract proper batch slices
                 label_hat = self.forward(data)
                 self.backward(labels, learning_rate, batch_size)
 

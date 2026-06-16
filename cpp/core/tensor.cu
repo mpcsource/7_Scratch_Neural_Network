@@ -63,6 +63,24 @@ Tensor Tensor::add_tensor(const Tensor& other) const {
     return out;
 }
 
+// Add bias (column vector) to each column
+Tensor Tensor::add_bias(const Tensor& bias) const {
+    if (ndim != 2 || bias.ndim != 2) {
+        throw std::invalid_argument("add_bias expects 2D tensors");
+    }
+    if (shape[0] != bias.shape[0] || bias.shape[1] != 1) {
+        throw std::invalid_argument("Shape mismatch in add_bias");
+    }
+
+    Tensor out(shape);
+    for (int j = 0; j < shape[1]; j++) {
+        for (int i = 0; i < shape[0]; i++) {
+            out.h_data[i * shape[1] + j] = h_data[i * shape[1] + j] + bias.h_data[i];
+        }
+    }
+    return out;
+}
+
 // Subtraction
 Tensor Tensor::sub_tensor(const Tensor& other) const {
     if (shape != other.shape) {
@@ -125,6 +143,36 @@ Tensor Tensor::dot_tensor(const Tensor& other) const{
         }
     }
 
+    return out;
+}
+
+// Transpose (2D only)
+Tensor Tensor::transpose_tensor() const {
+    if (ndim != 2) {
+        throw std::invalid_argument("transpose_tensor expects 2D tensors");
+    }
+    Tensor out(std::vector<int>{shape[1], shape[0]});
+    for (int i = 0; i < shape[0]; i++) {
+        for (int j = 0; j < shape[1]; j++) {
+            out.h_data[j * shape[0] + i] = h_data[i * shape[1] + j];
+        }
+    }
+    return out;
+}
+
+// Sum across columns (2D only), returns rows×1
+Tensor Tensor::sum_cols_tensor() const {
+    if (ndim != 2) {
+        throw std::invalid_argument("sum_cols_tensor expects 2D tensors");
+    }
+    Tensor out(std::vector<int>{shape[0], 1});
+    for (int i = 0; i < shape[0]; i++) {
+        float sum = 0.0f;
+        for (int j = 0; j < shape[1]; j++) {
+            sum += h_data[i * shape[1] + j];
+        }
+        out.h_data[i] = sum;
+    }
     return out;
 }
 

@@ -35,12 +35,27 @@ public:
         const std::vector<float>& in_data = {}
     );
 
+    // Transpose (2D only)
+    Tensor transpose_tensor() const;
+
+    // Sum across columns (2D only), returns rows×1
+    Tensor sum_cols_tensor() const;
+
+    // Read access to shape
+    const std::vector<int>& get_shape() const { return shape; }
+
+    // Read access to flat data
+    const std::vector<float>& get_data() const { return h_data; }
+
     // ===============
     // Math operations
     // ===============
 
     // Addition
     Tensor add_tensor(const Tensor& other) const;
+
+    // Add bias column vector to each column
+    Tensor add_bias(const Tensor& bias) const;
 
     // Subtraction
     Tensor sub_tensor(const Tensor& other) const;
