@@ -29,7 +29,7 @@ class Dataset:
         return self.data[:5]
     
     def tail(self) -> list[list]:
-        return self.data[:-5]
+        return self.data[-5:]
 
     def normalize(self):
         self.normalized = True

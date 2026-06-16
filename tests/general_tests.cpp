@@ -6,7 +6,7 @@
 TEST(NeuralNetwork, BasicTest) {
     // Load data from CSV file.
     Matrix data = loadData("../tests/data.csv", ',', true);
-
+    
     // Split data into training and testing sets.
     auto [x_train, y_train, x_test, y_test] = trainTestSplit(data, 8);
 

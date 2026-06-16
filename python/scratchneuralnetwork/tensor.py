@@ -133,7 +133,6 @@ class Tensor:
         Returns:
             A Tensor of shape [n_rows, n_cols].
         """
-        categorical = set(categorical)
 
         rows: list[list[float]] = []
 
