@@ -19,19 +19,18 @@ class ActiFun(Enum):
     def forward(self, x: Tensor) -> Tensor:
         match self:
             case ActiFun.SIGMOID:
-                return 1 / (1 + (-x).exp())
+                return Tensor._from_impl(x._impl.sigmoid_tensor(), None, [x])
             case ActiFun.RELU:
-                return x.relu()
+                return Tensor._from_impl(x._impl.relu_tensor(), None, [x])
             case _:
                 return x
 
     def derivative(self, x: Tensor) -> Tensor:
         match self:
             case ActiFun.SIGMOID:
-                s = self.forward(x)
-                return s * (1 - s)
+                return Tensor._from_impl(x._impl.sigmoid_derivative_tensor(), None, [x])
             case ActiFun.RELU:
-                return x.relu_derivative()
+                return Tensor._from_impl(x._impl.relu_derivative_tensor(), None, [x])
             case _:
                 return Tensor.ones(*x.shape)
 
@@ -62,7 +61,10 @@ class Layer:
 
     def forward(self, tin: Tensor) -> None:
         self.x = tin
-        self.z = (self.weights @ self.x).add_bias(self.biases)
+        self.z = Tensor._from_impl(
+            self.weights._impl.dot_add_bias_tensor(self.x._impl, self.biases._impl),
+            None, [self.weights, self.x, self.biases],
+        )
         self.a = self.acti_fun.forward(self.z)
         self.da = self.acti_fun.derivative(self.z)
 

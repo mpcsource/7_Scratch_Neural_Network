@@ -69,6 +69,25 @@ public:
     // Dot product
     Tensor dot_tensor(const Tensor& other) const;
 
+    // Fused dot product + add bias: (this @ other) + bias
+    Tensor dot_add_bias_tensor(const Tensor& other, const Tensor& bias) const;
+
+    // ====================
+    // Activation functions
+    // ====================
+
+    // Sigmoid: 1 / (1 + exp(-x))
+    Tensor sigmoid_tensor() const;
+
+    // Sigmoid derivative: sigmoid(x) * (1 - sigmoid(x))
+    Tensor sigmoid_derivative_tensor() const;
+
+    // ReLU: max(0, x)
+    Tensor relu_tensor() const;
+
+    // ReLU derivative: 1 if x > 0 else 0
+    Tensor relu_derivative_tensor() const;
+
     // ================
     // Gradient methods
     // ================

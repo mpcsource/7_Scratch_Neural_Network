@@ -1,3 +1,4 @@
+import random
 from .tensor import Tensor
 from .layer import Layer
 
@@ -54,6 +55,7 @@ class Model:
             epochs: int = 10,
             learning_rate: float = 0.01,
             batch_size: int = None,
+            shuffle: bool = True,
             ) -> None:
 
         # data shape is (n_features, n_samples)
@@ -64,9 +66,21 @@ class Model:
         steps = n_samples // batch_size
 
         for epoch in range(epochs):
+            epoch_data = data
+            epoch_labels = labels
+
+            if shuffle:
+                indices = list(range(n_samples))
+                random.shuffle(indices)
+                epoch_data = data.gather_cols(indices)
+                epoch_labels = labels.gather_cols(indices)
+
             for step in range(steps):
-                label_hat = self.forward(data)
-                self.backward(labels, learning_rate, batch_size)
+                start = step * batch_size
+                batch_x = epoch_data.slice_cols(start, batch_size)
+                batch_y = epoch_labels.slice_cols(start, batch_size)
+                self.forward(batch_x)
+                self.backward(batch_y, learning_rate, batch_size)
 
     def append_layer(
             self,

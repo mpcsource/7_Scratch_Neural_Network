@@ -19,14 +19,21 @@ class Tensor:
     """Python Tensor: holds a CTensor backend + autograd metadata."""
 
     def __init__(self, data=None, requires_grad: bool = False):
-        self.shape, self.flat = self._to_shape_and_flat(data)
-        self._impl: CTensor = CTensor(self.shape, self.flat)
+        self.shape, flat = self._to_shape_and_flat(data)
+        self._flat = flat
+        self._impl: CTensor = CTensor(self.shape, self._flat)
         self.op: Operation | None = None
         self.parents: list[Tensor] | None = None
         self.requires_grad: bool = requires_grad
 
         # Dataset variables
         self.encoding: dict[str, int] | None = None
+
+    @property
+    def flat(self) -> list[float]:
+        if self._flat is None:
+            self._flat = list(self._impl.flat)
+        return self._flat
 
     @staticmethod
     def _to_shape_and_flat(data) -> tuple[list[int], list[float]]:
@@ -88,7 +95,7 @@ class Tensor:
         t = Tensor.__new__(Tensor)  # bypasses __init__, no CTensor allocation
         t._impl = impl
         t.shape = list(impl.shape)
-        t.flat = list(impl.flat)
+        t._flat = None
         t.op = op
         t.parents = parents
         t.requires_grad = False
@@ -255,6 +262,31 @@ class Tensor:
             None,
             [self],
         )
+
+    def slice_cols(self, start: int, count: int) -> Tensor:
+        flat = self.flat
+        nf, ns = self.shape
+        if start + count > ns:
+            raise ValueError(f"slice_cols: start={start}, count={count} exceeds cols={ns}")
+        result = [0.0] * (nf * count)
+        for i in range(nf):
+            src = i * ns + start
+            dst = i * count
+            for j in range(count):
+                result[dst + j] = flat[src + j]
+        return Tensor._from_impl(CTensor([nf, count], result), None, None)
+
+    def gather_cols(self, indices: list[int]) -> Tensor:
+        flat = self.flat
+        nf, ns = self.shape
+        n = len(indices)
+        result = [0.0] * (nf * n)
+        for i in range(nf):
+            src_row = i * ns
+            dst_row = i * n
+            for j, col in enumerate(indices):
+                result[dst_row + j] = flat[src_row + col]
+        return Tensor._from_impl(CTensor([nf, n], result), None, None)
 
     # Dot product
     def __matmul__(
